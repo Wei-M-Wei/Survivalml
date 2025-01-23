@@ -38,7 +38,7 @@ n <- 2000
 p <- 10
 x1 <- rnorm(n)
 x2 <- 0.2*x1 + rnorm(n)
-x3= matrix(rnorm(n*p), nrow = n, ncol = p)
+x3 <- matrix(rnorm(n*p), nrow = n, ncol = p)
 
 # Define parameters for generating y
 intercept <- 5
