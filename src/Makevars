@@ -1,0 +1,21 @@
+C_OBJS = sparsegl_weight_init.o
+F_OBJS = log_sgl_subfuns_weight.o spmatmul.o KKT.o sparsegllog_weight.o
+
+all: $(SHLIB) clean
+
+$(SHLIB): $(F_OBJS) $(C_OBJS)
+
+spmatmul.o: spmatmul.f90
+spmatmul.mod: spmatmul.o
+KKT.o: spmatmul.mod
+KKT.mod: spmatmul.mod KKT.o
+log_sgl_subfuns_weight.o: spmatmul.mod
+log_sgl_subfuns_weight.mod: log_sgl_subfuns_weight.f90 log_sgl_subfuns_weight.o spmatmul.mod\
+										 spmatmul.o
+sparsegllog_weight.o: sparsegllog_weight.f90 log_sgl_subfuns_weight.mod KKT.mod spmatmul.mod
+sparsegl_weight_init.o: sparsegllog_weight.o spmatmul.o KKT.o\
+								 log_sgl_subfuns_weight.o spmatmul.mod KKT.mod\
+								 log_sgl_subfuns_weight.mod
+
+clean:
+	@rm -rf *.mod *.o
