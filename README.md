@@ -25,7 +25,7 @@ This example can be used to verify the correctness of the package (see 'check th
 
 ## An example:
 ```{r }
-library(survivalml)
+library(Survivalml)
 n <- 2000
 p=10
 x1 <- rnorm(n)
@@ -44,18 +44,21 @@ y <- rbinom(n, 1, probabilities)
 X <- data.frame(x1, x2, x3)
 X = data.matrix(X)
 index = seq(p+2)
-weight is specified randomly
+#weight is specified randomly
 weight = c(rep(0.2,100), rep(1,100), rep(1,n - 200))
 
 # LASSO when alpha = 1, Group LASSO when alpha = 0
 # intercept_zero could be set arbitrarily sicne it's a starting point of the block coordinate descent algorithm, we use 'intercept_zero = 0' through all the simulations and empirical applications
 fit = survival_sparsegl(X, y, group = index, nlambda = 100, asparse = 1, weight = weight, intercept_zero = 0, standardize = TRUE)
-
+fit$beta
 # Group LASSO
 fit = survival_sparsegl(X, y, group = index, nlambda = 100, asparse = 0, weight = weight, intercept_zero = 0, standardize = TRUE)
+fit$beta
 
 # Sparse group LASSO
 fit = survival_sparsegl(X, y, group = index, nlambda = 100, asparse = 0.5, weight = weight, intercept_zero = 0, standardize = TRUE)
+fit$beta
+
 ```
 
 ## Reference
