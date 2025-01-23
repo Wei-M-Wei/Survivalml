@@ -9,7 +9,7 @@ install.packages('your path/Survivalml_0.1.0.tar.gz')
 Once installed, load the package with
 ```{r }
 library(Survivalml)
-```{r }
+```
 A CRAN release is coming soon.
 
 
