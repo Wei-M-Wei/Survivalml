@@ -1,8 +1,8 @@
-## survivalml
+## Survivalml
 
 This is the first version of the R package survivalml. Please note that it does not include the raw dataset used in the empirical section. The dataset is available upon request.
 
-To install and use the package, we recommend downloading this project and installing the package locally. Once installed, load the package with: 'library(survivalml)'. A CRAN release is coming soon.
+To install and use the package, we recommend downloading 'Survivalml_0.1.0.tar.gz' and installing the package locally. Once installed, load the package with: 'library(Survivalml)'. A CRAN release is coming soon.
 
 
 ## Description
