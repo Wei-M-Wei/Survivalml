@@ -6,7 +6,11 @@ To install and use the package, we recommend downloading 'Survivalml_0.1.0.tar.g
 ```{r }
 install.packages('your path/Survivalml_0.1.0.tar.gz')
 ```
-Once installed, load the package with: 'library(Survivalml)'. A CRAN release is coming soon.
+Once installed, load the package with
+```{r }
+library(Survivalml)
+```{r }
+A CRAN release is coming soon.
 
 
 ## Description
