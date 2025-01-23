@@ -55,6 +55,8 @@ weight = c(rep(0.2,100), rep(1,100), rep(1,n - 200))
 # intercept_zero could be set arbitrarily sicne it's a starting point of the block coordinate descent algorithm, we use 'intercept_zero = 0' through all the simulations and empirical applications
 fit = survival_sparsegl(X, y, group = index, nlambda = 100, asparse = 1, weight = weight, intercept_zero = 0, standardize = TRUE)
 fit$beta
+
+
 # Group LASSO
 fit = survival_sparsegl(X, y, group = index, nlambda = 100, asparse = 0, weight = weight, intercept_zero = 0, standardize = TRUE)
 fit$beta
