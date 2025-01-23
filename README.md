@@ -60,7 +60,6 @@ weight = c(rep(0.2,100), rep(1,100), rep(1,n - 200))
 fit = survival_sparsegl(X, y, group = index, nlambda = 100, asparse = 1, weight = weight, intercept_zero = 0, standardize = TRUE)
 fit$beta
 
-
 # Group LASSO
 fit = survival_sparsegl(X, y, group = index, nlambda = 100, asparse = 0, weight = weight, intercept_zero = 0, standardize = TRUE)
 fit$beta
