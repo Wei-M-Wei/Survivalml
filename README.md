@@ -20,7 +20,7 @@ This package is based on code from the following sources:
 - **midasml** (https://cran.r-project.org/web/packages/midasml/index.html): Applies MIDAS into logistic regression [^2].
 
 ## Features
-- **Main functionality**: The primary function of this package estimates outcome weighted logistic regression with sparse group LASSO penalty, which can also be reduced to a standard logistic regression model and allows for censored data. For more details, see [3].
+- **Main functionality**: The primary function of this package estimates outcome weighted logistic regression with sparse group LASSO penalty, which can also be reduced to a standard logistic regression model and allows for censored data. For more details, see the paper [^3].
 - **Validation example**: An example is included to compare this package with:
   - **glmnet** for LASSO
   - **optim** for incorporating weights into the logistic model.
