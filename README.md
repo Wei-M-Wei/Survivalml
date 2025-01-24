@@ -76,4 +76,4 @@ fit$beta
 
 [^2]: Babii, A., Ghysels, E., & Striaukas, J. (2022). Machine learning time series regressions with an application to nowcasting. Journal of Business & Economic Statistics, 40(3), 1094-1106.
 
-[^3]: Wei, M., Jad, B., Jonas, S., & Ingrid Van, K. High-dimensional censored MIDAS logistic regression for corporate survival forecasting.
+[^3]: Miao, W., Beyhum, J., Striaukas, J., & Keilegom, Ingrid Van, K. High-dimensional censored MIDAS logistic regression for corporate survival forecasting.
