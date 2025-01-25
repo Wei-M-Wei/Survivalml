@@ -1,4 +1,8 @@
-#
+#######
+We need package 'Survivalml' including the empirical dataset to run this .r file, please jump to 'complete sub dataset extraction by Algorithm C (import raw dataset).R'.
+#######
+
+
 rm(list = ls())
 library(readxl)
 library(lubridate)
