@@ -67,7 +67,7 @@ fit$beta
 # Sparse group LASSO
 fit = survival_sparsegl(X, y, group = index, nlambda = 100, asparse = 0.5, weight = weight, intercept_zero = 0, standardize = TRUE)
 fit$beta
-
+    
 ```
 
 ## Reference
