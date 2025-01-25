@@ -67,6 +67,12 @@ fit$beta
 # Sparse group LASSO
 fit = survival_sparsegl(X, y, group = index, nlambda = 100, asparse = 0.5, weight = weight, intercept_zero = 0, standardize = TRUE)
 fit$beta
+
+# Cross-validation without censored data, where 'pred.loss = 'censor'' allows maximizing the weighted log-likelihood.
+fit_cv = cv.survival_sparsegl(X, y, group = index, nlambda = 100, asparse = 0.5, weight = weight, intercept_zero = 0, standardize = TRUE, asparse = 0.5, nfolds = 5, pred.loss = 'censor', intercept_zero = 0, standardize = TRUE)
+
+# In the case of censored data, please check the 'survival-estimate.r' file, where we describe functions in detail.
+    
     
 ```
 
