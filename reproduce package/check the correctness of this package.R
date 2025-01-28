@@ -23,7 +23,7 @@ p <- 1 / (1 + exp(-linear_predictor))
 # Simulate the binary outcome y based on the probabilities
 y <- rbinom(n, size = 1, prob = p)
 
-# weight
+# weight, this case is all observations have equal weights
 wei = c(rep(1, 50), rep(1, 100), rep(1,n-150))
 
 # Step 2: Use optim() to Estimate Parameters
@@ -47,12 +47,17 @@ beta_optim <- result_optim$par
 print("Estimated coefficients using optim:")
 print(beta_optim)
 
+# Fit the logistic regression model using glm()
+model_glm <- glm(y~ x[,-1],  family = binomial(link = "logit"))
+model_glm$coefficients
+
 # Estimated coefficients from survivalml
 fit2 = survival_sparsegl(x[,-1], y, group = seq(2), nlambda = 10, lambda = c(0), weight = wei, asparse = 1, intercept_zero = -1, standardize = TRUE, eps = 1e-8, maxit = 10000000,intercept = TRUE)
 fit2$beta
 
 # compare fit2$beta and beta_optim, we find the difference is very little
 fit2$beta - beta_optim[2:3]
+fit2$beta - model_glm$coefficients[2:3]
 
 
 # comparison between glmenet and survivalml, we set alpha = 1, lambda = c(0.01, 0.08)
@@ -68,8 +73,41 @@ print("Estimated coefficients using glm:")
 print(beta_glm)
 
 
-fit2 = survival_sparsegl(x[,-1], y, group = seq(2), nlambda = 10, lambda = c(0.01,0.08), weight = wei, asparse = 1, intercept_zero = -1, standardize = TRUE, eps = 1e-8, maxit = 10000000,intercept = TRUE)
+fit2 = survival_sparsegl(x[,-1], y, group = seq(2), nlambda = 10, lambda = c(0.01,0.08), weight = wei, asparse = 1, intercept_zero = -1, standardize = TRUE)
 fit2$beta
 
 # compare fit2$beta and beta_glm, we find the difference is very little
 fit2$beta - beta_glm[2:3,]
+
+
+# Another comparison, in the case of weighted logistic regression without penalty
+# weight, this case is weighted logistic regression
+wei = c(rep(1, 50), rep(0, 100), rep(1,n-150))
+
+# Step 2: Use optim() to Estimate Parameters
+# Negative log-likelihood function for logistic regression
+neg_log_likelihood <- function(beta) {
+  linear_predictor <- x %*% beta
+  p <- 1 / (1 + exp(-linear_predictor))
+
+  # Calculate the negative log-likelihood
+  -sum(wei*y * log(p) + (1 - wei*y) * log(1 - p))
+}
+
+# Initial guesses for beta
+initial_params <- rep(0, ncol(x))
+
+# Use optim() to find the MLE estimates for beta
+result_optim <- optim(par = initial_params, fn = neg_log_likelihood, method = "BFGS")
+
+# Estimated coefficients from optim
+beta_optim <- result_optim$par
+print("Estimated coefficients using optim:")
+print(beta_optim)
+
+# Estimated coefficients from survivalml
+fit2 = survival_sparsegl(x[,-1], y, group = seq(2), nlambda = 10, lambda = c(0), weight = wei, asparse = 1, intercept_zero = -1, standardize = TRUE)
+fit2$beta
+
+# compare fit2$beta and beta_optim, we find the difference is very little
+fit2$beta - beta_optim[2:3]
