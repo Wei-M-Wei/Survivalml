@@ -25,7 +25,7 @@ This package is based on code from the following sources:
   - **glmnet** for LASSO
   - **optim** for incorporating weights into the logistic model.
     
-This example can be used to verify the correctness of the package (see more details in 'check the correctness of this package.R').
+This example can be used to verify the correctness of the package (see more details in 'check the correctness of this package.R'). Another example of recovering the true parameters in the weighted logistic regression is 'correctness check for weighted logistic regression without penalty and MIDAS.R'.
 
 ## Additional resources
 - **Replication code**: The repository includes replication code for all simulations and empirical applications.
