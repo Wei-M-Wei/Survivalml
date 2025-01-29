@@ -48,7 +48,7 @@ library(timeROC)
 s = 6
 lag_use_year = 6
 quarter = 4
-lags = lag_use_year * quarter - 1 ############we don't have the information of the last lag.
+lags = lag_use_year * quarter - 1 ############we don't have the information of the latest lag.
 jmax <- lags
 
 
@@ -209,13 +209,15 @@ for (t in c( 8, 8.5, 9)) {
     AUC_MIDAS_LASSO_bootstrap =  ROC_N_bootstrap(data = test_dataset, prediction = test_predictions_MIDAS_LASSO, t = t, sim_number = bootstrap_number )
     AUC_MIDAS_LASSO_AUC_bootstrap =  ROC_N_bootstrap(data = test_dataset, prediction = test_predictions_MIDAS_LASSO_AUC, t = t, sim_number = bootstrap_number )
 
-    #LASSO-UMIDAS
+    # LASSO-UMIDAS
     fit_cv_LASSO = cv.survival_sparsegl(X_train, y_train, group = seq(dim(X_train)[2]), nlambda = 200, weight = w_train, asparse = 1, foldid = foldid, nfolds = 5, pred.loss = 'censor', intercept_zero = intercept_zero, standardize = TRUE, maxit = 30000, AUC = TRUE, data = train_dataset, t = t)
+    # if nan, set a larger number as its likelihood
     nan_indices <- sapply(fit_cv_LASSO$cvm, is.nan)
     fit_cv_LASSO$cvm[nan_indices] <- 1000
     cesnor_min_index_LASSO = which(fit_cv_LASSO$cvm== min(fit_cv_LASSO$cvm))[1]
     est_LASSO = unlist(c(fit_cv_LASSO$survival_sparsegl.fit$b0[,cesnor_min_index_LASSO], fit_cv_LASSO$survival_sparsegl.fit$beta[,cesnor_min_index_LASSO]))
 
+    # if nan, set 0 as its AUC
     nan_indices <- sapply(fit_cv_LASSO$AUC_censor, is.nan)
     fit_cv_LASSO$AUC_censor[nan_indices] <- 0
     cesnor_min_index_LASSO = which(fit_cv_LASSO$AUC_censor== max(fit_cv_LASSO$AUC_censor))[1]
@@ -227,6 +229,7 @@ for (t in c( 8, 8.5, 9)) {
     AUC_LASSO = ROC_censor_N(data = test_dataset, prediction = test_predictions_LASSO, t = t )$AUC
     AUC_LASSO_AUC = ROC_censor_N(data = test_dataset, prediction = test_predictions_LASSO_AUC, t = t )$AUC
 
+    # bootstrap for LASSO-UMIDAS
     AUC_LASSO_bootstrap =  ROC_N_bootstrap(data = test_dataset, prediction = test_predictions_LASSO, t = t, sim_number = bootstrap_number )
     AUC_LASSO_AUC_bootstrap =  ROC_N_bootstrap(data = test_dataset, prediction = test_predictions_LASSO_AUC, t = t, sim_number = bootstrap_number )
 
