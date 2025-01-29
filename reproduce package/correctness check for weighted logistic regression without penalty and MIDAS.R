@@ -6,7 +6,7 @@
 
 #============================================================
 # Correctness check, weighted logistic regression without penaly and MIDAS
-# The goal is to check the |bias|_2
+# The goal is to check the MSE of estimated parameters
 #============================================================
 
 
@@ -258,7 +258,7 @@ packages_to_export <- c('timeROC', 'mvtnorm', 'Survivalml', "dplyr", "midasml", 
 
 # repetitions of the simulation
 it = 500
-for (n in c(100, 1000, 2000)) {
+for (n in c(100, 200, 500)) {
 result = foreach(k = 1:it, .packages = packages_to_export, .export = export_env) %dopar% {
       set.seed(k*t)
       # data prepare
@@ -286,8 +286,8 @@ for (i in seq(it)) {
   est_all = est_all + result[[i]]$est_cof
 }
 est = est_all/it
-mqe = norm((est- b_truec[-1]), type = "2")
-print(mqe)
+mse = mean((est- b_truec[-1])^2)
+print(mse)
 }
 
 
