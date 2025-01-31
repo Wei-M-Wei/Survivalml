@@ -164,32 +164,32 @@ paral_independent = function(result,it){
   w1_es = w%*%as.numeric(res_fit_av_MIDAS[(1+1):(1+1+degree)])
   w1_es_MIDAS_LASSO = w%*%as.numeric(res_fit_av_MIDAS_LASSO[(1+1):(1+1+degree)])
   w1_es_LASSO = as.numeric(res_fit_av_LASSO[(1+1):(1+1+jmax-1)])
-  w1_es_var = round(mean(apply(as.matrix(res_fit_MIDAS[, (1  + 1):(1  + 1 + degree)])%*%t(w), 2, var)), 5)
+  w1_es_sd = round(mean(apply(as.matrix(res_fit_MIDAS[, (1  + 1):(1  + 1 + degree)])%*%t(w), 2, sd)), 5)
   w1_es_MSE = round(mean(as.numeric((w1_tr - w1_es)^2) + apply(as.matrix(res_fit_MIDAS[, (1  + 1):(1  + 1 + degree)])%*%t(w), 2, var)), 5)
-  w1_es_var_LASSO = round(mean(apply(as.matrix(res_fit_LASSO[, (1  + 1):(1  + 1 + jmax - 1)]), 2, var)), 5)
+  w1_es_sd_LASSO = round(mean(apply(as.matrix(res_fit_LASSO[, (1  + 1):(1  + 1 + jmax - 1)]), 2, sd)), 5)
   w1_es_MSE_LASSO = round(mean(as.numeric((w1_tr - w1_es_LASSO)^2) + apply(as.matrix(res_fit_LASSO[, (1  + 1):(1  + 1 + jmax - 1)]), 2, var)), 5)
-  w1_es_var_MIDAS_LASSO = round(mean(apply(as.matrix(res_fit_MIDAS_LASSO[, (1  + 1):(1  + 1 + degree)])%*%t(w), 2, var)), 5)
+  w1_es_sd_MIDAS_LASSO = round(mean(apply(as.matrix(res_fit_MIDAS_LASSO[, (1  + 1):(1  + 1 + degree)])%*%t(w), 2, sd)), 5)
   w1_es_MSE_MIDAS_LASSO = round(mean(as.numeric((w1_tr - w1_es_MIDAS_LASSO)^2) + apply(as.matrix(res_fit_MIDAS_LASSO[, (1  + 1):(1  + 1 + degree)])%*%t(w), 2, var)), 5)
   #########################################
   w2_tr = w2 * b_true[1+1+1]
   w2_es = w%*%as.numeric(res_fit_av_MIDAS[(1+1+degree+1):(1+1+degree+1+degree)])
   w2_es_LASSO = as.numeric(res_fit_av_LASSO[(1+1+jmax):(1+1+jmax*2-1)])
   w2_es_MIDAS_LASSO = w%*%as.numeric(res_fit_av_MIDAS_LASSO[(1+1+degree+1):(1+1+degree+1+degree)])
-  w2_es_var = round(mean(apply(as.matrix(res_fit_MIDAS[, (1+1+degree+1):(1+1+degree+1+degree)])%*%t(w), 2, var)), 5)
-  w2_es_var_LASSO = round(mean(apply(as.matrix(res_fit_LASSO[, (1+1+jmax):(1+1+jmax*2-1)]), 2, var)), 5)
-  w2_es_var_MIDAS_LASSO = round(mean(apply(as.matrix(res_fit_MIDAS_LASSO[, (1+1+degree+1):(1+1+degree+1+degree)])%*%t(w), 2, var)), 5)
+  w2_es_sd = round(mean(apply(as.matrix(res_fit_MIDAS[, (1+1+degree+1):(1+1+degree+1+degree)])%*%t(w), 2, sd)), 5)
+  w2_es_sd_LASSO = round(mean(apply(as.matrix(res_fit_LASSO[, (1+1+jmax):(1+1+jmax*2-1)]), 2, sd)), 5)
+  w2_es_sd_MIDAS_LASSO = round(mean(apply(as.matrix(res_fit_MIDAS_LASSO[, (1+1+degree+1):(1+1+degree+1+degree)])%*%t(w), 2, sd)), 5)
   w2_es_MSE = round(mean(as.numeric((w2_tr - w2_es)^2) + apply(as.matrix(res_fit_MIDAS[, (1+1+degree+1):(1+1+degree+1+degree)])%*%t(w), 2, var)), 5)
   w2_es_MSE_LASSO = round(mean(as.numeric((w2_tr - w2_es_LASSO)^2) + apply(as.matrix(res_fit_LASSO[, (1+1+jmax):(1+1+jmax*2-1)]), 2, var)), 5)
   w2_es_MSE_MIDAS_LASSO = round(mean(as.numeric((w2_tr - w2_es_MIDAS_LASSO)^2) + apply(as.matrix(res_fit_MIDAS_LASSO[, (1+1+degree+1):(1+1+degree+1+degree)])%*%t(w), 2, var)), 5)
   ############################################################
   #########################################################################
-  res = list(AUC_true_N = round(colMeans(AUC_true_N),3), AUC_true_N_VAR = round(apply(AUC_true_N, 2, var),3),  AUC_MIDAS_N = round(colMeans(AUC_MIDAS_N),3), AUC_MIDAS_N_VAR = round(apply(AUC_MIDAS_N, 2, var),3), AUC_LASSO_N = round(colMeans(AUC_LASSO_N),3), AUC_LASSO_N_VAR = round(apply(AUC_LASSO_N, 2, var),3), AUC_MIDAS_LASSO_N = round(colMeans(AUC_MIDAS_LASSO_N),3), AUC_MIDAS_LASSO_N_VAR = round(apply(AUC_MIDAS_LASSO_N, 2, var),3),
-             w1_es_MSE = w1_es_MSE, w1_es_var = w1_es_var,
-             w2_es_MSE = w2_es_MSE, w2_es_var = w2_es_var,
-             w1_es_MSE_LASSO = w1_es_MSE_LASSO, w1_es_var_LASSO = w1_es_var_LASSO,
-             w2_es_MSE_LASSO = w2_es_MSE_LASSO, w2_es_var_LASSO = w2_es_var_LASSO,
-             w1_es_MSE_MIDAS_LASSO = w1_es_MSE_MIDAS_LASSO, w1_es_var_MIDAS_LASSO = w1_es_var_MIDAS_LASSO,
-             w2_es_MSE_MIDAS_LASSO = w2_es_MSE_MIDAS_LASSO, w2_es_var_MIDAS_LASSO = w2_es_var_MIDAS_LASSO,
+  res = list(AUC_true_N = round(colMeans(AUC_true_N),3), AUC_true_N_sd = round(apply(AUC_true_N, 2, sd),3),  AUC_MIDAS_N = round(colMeans(AUC_MIDAS_N),3), AUC_MIDAS_N_sd = round(apply(AUC_MIDAS_N, 2, sd),3), AUC_LASSO_N = round(colMeans(AUC_LASSO_N),3), AUC_LASSO_N_sd = round(apply(AUC_LASSO_N, 2, sd),3), AUC_MIDAS_LASSO_N = round(colMeans(AUC_MIDAS_LASSO_N),3), AUC_MIDAS_LASSO_N_sd = round(apply(AUC_MIDAS_LASSO_N, 2, sd),3),
+             w1_es_MSE = w1_es_MSE, w1_es_sd = w1_es_sd,
+             w2_es_MSE = w2_es_MSE, w2_es_sd = w2_es_sd,
+             w1_es_MSE_LASSO = w1_es_MSE_LASSO, w1_es_sd_LASSO = w1_es_sd_LASSO,
+             w2_es_MSE_LASSO = w2_es_MSE_LASSO, w2_es_sd_LASSO = w2_es_sd_LASSO,
+             w1_es_MSE_MIDAS_LASSO = w1_es_MSE_MIDAS_LASSO, w1_es_sd_MIDAS_LASSO = w1_es_sd_MIDAS_LASSO,
+             w2_es_MSE_MIDAS_LASSO = w2_es_MSE_MIDAS_LASSO, w2_es_sd_MIDAS_LASSO = w2_es_sd_MIDAS_LASSO,
              censoring_proportions = colMeans(censoring_proportions), balance = colMeans(balance))
   return(res)
 }
@@ -369,13 +369,13 @@ for (censor in censor_strength){
     pa[i, ] = c(res$censoring_proportions, res$balance,
                 'AUC',
                 res$AUC_true_N, res$AUC_LASSO_N, res$AUC_MIDAS_LASSO_N, res$AUC_MIDAS_N,
-                sqrt(res$AUC_true_N_VAR), sqrt(res$AUC_LASSO_N_VAR), sqrt(res$AUC_MIDAS_LASSO_N_VAR), sqrt(res$AUC_MIDAS_N_VAR),
+                res$AUC_true_N_sd, res$AUC_LASSO_N_sd, res$AUC_MIDAS_LASSO_N_sd, res$AUC_MIDAS_N_sd,
                 'w1',
                 round(res$w1_es_MSE_LASSO,3), round(res$w1_es_MSE_MIDAS_LASSO,3), round(res$w1_es_MSE,3),
-                round(res$w1_es_var_LASSO,3), round(res$w1_es_var_MIDAS_LASSO,3), round(res$w1_es_var,3),
+                round(res$w1_es_sd_LASSO,3), round(res$w1_es_sd_MIDAS_LASSO,3), round(res$w1_es_sd,3),
                 'w2',
                 round(res$w2_es_MSE_LASSO,3), round(res$w2_es_MSE_MIDAS_LASSO,3), round(res$w2_es_MSE,3),
-                round(res$w2_es_var_LASSO,3), round(res$w2_es_var_MIDAS_LASSO,3), round(res$w2_es_var,3))
+                round(res$w2_es_sd_LASSO,3), round(res$w2_es_sd_MIDAS_LASSO,3), round(res$w2_es_sd,3))
     print(pa[i, ])
   }
   table_name <- paste0("MIDASAUC_scenario2", censor, 800, s,  ".csv")
@@ -482,13 +482,13 @@ for (censor in censor_strength){
     pa[i, ] = c(res$censoring_proportions, res$balance,
                 'AUC',
                 res$AUC_true_N, res$AUC_LASSO_N, res$AUC_MIDAS_LASSO_N, res$AUC_MIDAS_N,
-                sqrt(res$AUC_true_N_VAR), sqrt(res$AUC_LASSO_N_VAR), sqrt(res$AUC_MIDAS_LASSO_N_VAR), sqrt(res$AUC_MIDAS_N_VAR),
+                res$AUC_true_N_sd, res$AUC_LASSO_N_sd, res$AUC_MIDAS_LASSO_N_sd, res$AUC_MIDAS_N_sd,
                 'w1',
                 round(res$w1_es_MSE_LASSO,3), round(res$w1_es_MSE_MIDAS_LASSO,3), round(res$w1_es_MSE,3),
-                round(res$w1_es_var_LASSO,3), round(res$w1_es_var_MIDAS_LASSO,3), round(res$w1_es_var,3),
+                round(res$w1_es_sd_LASSO,3), round(res$w1_es_sd_MIDAS_LASSO,3), round(res$w1_es_sd,3),
                 'w2',
                 round(res$w2_es_MSE_LASSO,3), round(res$w2_es_MSE_MIDAS_LASSO,3), round(res$w2_es_MSE,3),
-                round(res$w2_es_var_LASSO,3), round(res$w2_es_var_MIDAS_LASSO,3), round(res$w2_es_var,3))
+                round(res$w2_es_sd_LASSO,3), round(res$w2_es_sd_MIDAS_LASSO,3), round(res$w2_es_sd,3))
     print(pa[i, ])
   }
   table_name <- paste0("MIDASAUC_scenario2", censor, 1200, s,  ".csv")
