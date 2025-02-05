@@ -338,16 +338,16 @@ for (t in c( 8, 8.5, 9)) {
   )
 
   # save the table
-  table_name1 <- paste0("reverse_MIDAS_AUC", s, "_AUC_cvm", t, ".csv")
-  table_name2 <- paste0("reverse_MIDAS_AUC", s, "_AUC", t, ".csv")
-  table_name3 <- paste0("reverse_MIDAS_bootstrap", s, "_AUC_cvm", t, ".csv")
-  table_name4 <- paste0("reverse_MIDAS_bootstrap", s, "_AUC", t, ".csv")
-  table_name5 <- paste0("reverse_MIDAS", s, "_cof", t, ".csv")
-  table_name6 <- paste0("reverse_MIDAS", s, "_cof_AUC", t, ".csv")
-  table_name7 <- paste0("reverse_MIDAS_LASSO", s, "_cof", t, ".csv")
-  table_name8 <- paste0("reverse_MIDAS_LASSO", s, "_cof_AUC", t, ".csv")
-  table_name9 <- paste0("reverse_LASSO", s, "_cof", t, ".csv")
-  table_name10 <- paste0("reverse_LASSO", s, "_cof_AUC", t, ".csv")
+  table_name1 <- paste0("MIDAS_AUC", s, "_AUC_cvm", t, ".csv")
+  table_name2 <- paste0("MIDAS_AUC", s, "_AUC", t, ".csv")
+  table_name3 <- paste0("MIDAS_bootstrap", s, "_AUC_cvm", t, ".csv")
+  table_name4 <- paste0("MIDAS_bootstrap", s, "_AUC", t, ".csv")
+  table_name5 <- paste0("MIDAS", s, "_cof", t, ".csv")
+  table_name6 <- paste0("MIDAS", s, "_cof_AUC", t, ".csv")
+  table_name7 <- paste0("MIDAS_LASSO", s, "_cof", t, ".csv")
+  table_name8 <- paste0("MIDAS_LASSO", s, "_cof_AUC", t, ".csv")
+  table_name9 <- paste0("LASSO", s, "_cof", t, ".csv")
+  table_name10 <- paste0("LASSO", s, "_cof_AUC", t, ".csv")
 
   write.csv(rbind( c(res$AUC_MIDAS, res$AUC_MIDAS_VAR, res$AUC_LASSO, res$AUC_LASSO_VAR, res$AUC_MIDAS_LASSO, res$AUC_MIDAS_LASSO_VAR) ,
                    c( quantile(res$AUC_MIDAS_bootstrap_av, 0.025), quantile(res$AUC_MIDAS_bootstrap_av, 0.975),
@@ -612,16 +612,16 @@ for (t in c( 8, 8.5, 9)) {
   )
 
   # save the table
-  table_name1 <- paste0("reverse_Comparison_MIDAS_AUC", s, "_AUC_cvm", t, ".csv")
-  table_name2 <- paste0("reverse_Comparison_MIDAS_AUC", s, "_AUC", t, ".csv")
-  table_name3 <- paste0("reverse_Comparison_MIDAS_bootstrap", s, "_AUC_cvm", t, ".csv")
-  table_name4 <- paste0("reverse_Comparison_MIDAS_bootstrap", s, "_AUC", t, ".csv")
-  table_name5 <- paste0("reverse_Comparison_MIDAS", s, "_cof", t, ".csv")
-  table_name6 <- paste0("reverse_Comparison_MIDAS", s, "_cof_AUC", t, ".csv")
-  table_name7 <- paste0("reverse_Comparison_MIDAS_LASSO", s, "_cof", t, ".csv")
-  table_name8 <- paste0("reverse_Comparison_MIDAS_LASSO", s, "_cof_AUC", t, ".csv")
-  table_name9 <- paste0("reverse_Comparison_LASSO", s, "_cof", t, ".csv")
-  table_name10 <- paste0("reverse_Comparison_LASSO", s, "_cof_AUC", t, ".csv")
+  table_name1 <- paste0("Comparison_MIDAS_AUC", s, "_AUC_cvm", t, ".csv")
+  table_name2 <- paste0("Comparison_MIDAS_AUC", s, "_AUC", t, ".csv")
+  table_name3 <- paste0("Comparison_MIDAS_bootstrap", s, "_AUC_cvm", t, ".csv")
+  table_name4 <- paste0("Comparison_MIDAS_bootstrap", s, "_AUC", t, ".csv")
+  table_name5 <- paste0("Comparison_MIDAS", s, "_cof", t, ".csv")
+  table_name6 <- paste0("Comparison_MIDAS", s, "_cof_AUC", t, ".csv")
+  table_name7 <- paste0("Comparison_MIDAS_LASSO", s, "_cof", t, ".csv")
+  table_name8 <- paste0("Comparison_MIDAS_LASSO", s, "_cof_AUC", t, ".csv")
+  table_name9 <- paste0("Comparison_LASSO", s, "_cof", t, ".csv")
+  table_name10 <- paste0("Comparison_LASSO", s, "_cof_AUC", t, ".csv")
 
   write.csv(rbind( c(res$AUC_MIDAS, res$AUC_MIDAS_VAR, res$AUC_LASSO, res$AUC_LASSO_VAR, res$AUC_MIDAS_LASSO, res$AUC_MIDAS_LASSO_VAR) ,
                    c( quantile(res$AUC_MIDAS_bootstrap_av, 0.025), quantile(res$AUC_MIDAS_bootstrap_av, 0.975),
