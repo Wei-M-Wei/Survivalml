@@ -348,6 +348,8 @@ for (censor in censor_strength){
       b_truec = c(beta_true[1] + log((t - s)), beta_true[-1]  +  log((t - s)))
       b_truec = c(b_truec[1:(1)], w1*b_truec[1+1], w2*b_truec[1+1+1])
       predictions_true = unlist(as.list(plogis(X_orginal_test[, 1: (1+jmax*numtrue)] %*% b_truec)))
+
+      # 'span = 0.25*nrow(data)^(-1/2)' is the default setting through the whole paper
       AUC_true_N_t = survivalROC(Stime=test_dataset$time, status= test_dataset$status, marker = predictions_true, predict.time = t, span = 0.25*nrow(data)^(-1/2))
       AUC_true_N = AUC_true_N_t$AUC
 
