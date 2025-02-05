@@ -5,7 +5,7 @@
 
 
 #============================================================
-# Reproduce empirical application when s = 6 years and t = 8,8.5,9 years
+# Reproduce empirical application when s = 6 years and t = 8,8.5,9 years, Table 4
 #============================================================
 
 
@@ -44,17 +44,19 @@ library(lubridate)
 library(timeROC)
 
 
-#empirical settings
+# empirical settings
 s = 6
 lag_use_year = 6
 quarter = 4
-lags = lag_use_year * quarter - 1 ############we don't have the information of the latest lag.
+
+# we don't have the information of the latest lag.
+lags = lag_use_year * quarter - 1 
 jmax <- lags
 
 
 
 # read the data and check basic information
-#### notice that if you want to replicate, you have to import the sub-dataset which is extracted by the algorithm in te paper.
+# notice that if you want to replicate, you have to import the sub-dataset which is extracted by the algorithm in te paper.
 data_financial = read.csv2("period_final_new6.csv")  # read function from package readxl, the name of the dataset file is 'period_final_new6.csv'. Change the name as you want.
 n = dim(data_financial)[1]
 p_fin = dim(data_financial)[2] - 5
@@ -106,7 +108,7 @@ for (t in c( 8, 8.5, 9)) {
   it = 10
   result_para = foreach(k = 1:it, .errorhandling= 'remove', .packages = packages_to_export, .export = export_env) %dopar% {
     set.seed(s * k)
-    #allocate training dataset and test dataset, see Section 6.2
+    # allocate training dataset and test dataset, see Section 6.2
     dataset_p = data[ which( ( 1*(data$time <= t) * 1*(data$status==1)) == 1), ]
     dataset_n = data[ which( (  1*(data$time <= t) * 1*(data$status==1)) == 0), ]
     indices_p <- sample( nrow( dataset_p ), nrow( dataset_p ) * 0.8 )
@@ -118,7 +120,7 @@ for (t in c( 8, 8.5, 9)) {
     test_dataset_n <- dataset_n[ -indices_n, ]
     test_dataset_in = rbind(test_dataset_p, test_dataset_n)
 
-    #calculate the KM weights for each observation
+    # calculate the KM weights for each observation
     train_dataset = testRandomLogitDataset( train_dataset_in, t = t )
     train_dataset = KM_estimate(train_dataset)
     test_dataset = testRandomLogitDataset( test_dataset_in, t = t )
@@ -134,7 +136,7 @@ for (t in c( 8, 8.5, 9)) {
       foldid = c( form_folds(nrow(train_dataset[index_fold,]), nfold), form_folds(nrow(train_dataset[-index_fold,]), nfold) )
     }
 
-    #we have 14 variables which are related to T,C and etc. Then delete them
+    # we have 14 variables which are related to T,C and etc (these variables are not predictors), then delete them
     X_train = train_dataset[ , 1: (dim(train_dataset)[2]-14) ]
     y_train = 1*(train_dataset$time <= t)
     X_test = as.matrix( test_dataset[ , 1: (dim(train_dataset)[2]-14) ] )
@@ -154,13 +156,13 @@ for (t in c( 8, 8.5, 9)) {
       gindex <- c(gindex, rep(z, times = degree + 1))
     }
 
-    #training dataset which are used to in the SGL-MIDAS
+    # training dataset which are used to in the SGL-MIDAS
     X_in = as.matrix(cbind(rep(1, nrow(X_train)), Xdw))
     fit_cv_MIDAS = alpha_cv_sparsegl( X_in[,-1], y_train, group = gindex, nlambda = 200, weight = w_train, alpha = alpha, nfolds = 5, foldid = foldid, pred.loss = 'censor', intercept_zero = intercept_zero, standardize = TRUE, AUC = TRUE, data = train_dataset, t = t)
     est_MIDAS = fit_cv_MIDAS$coff
     est_MIDAS_AUC = fit_cv_MIDAS$coff_AUC
 
-    #test dataset
+    # test dataset
     X_t = NULL
     for (z in seq(dim(X_test)[2]/jmax)){
       z_idx <- (1 + (z - 1)*jmax) : (z * jmax)
@@ -168,7 +170,7 @@ for (t in c( 8, 8.5, 9)) {
     }
     X_te = as.matrix(cbind(rep(1, nrow(X_test)),  X_t))
 
-    #time dependent AUC and bootstrap
+    # time dependent AUC and bootstrap
     test_predictions_MIDAS = unlist( as.list(plogis(X_te %*% est_MIDAS)) )
     test_predictions_MIDAS_AUC = unlist( as.list(plogis(X_te %*% est_MIDAS_AUC)) )
 
@@ -179,7 +181,7 @@ for (t in c( 8, 8.5, 9)) {
     AUC_MIDAS_AUC_bootstrap =  ROC_N_bootstrap(data = test_dataset, prediction = test_predictions_MIDAS_AUC, t = t, sim_number = bootstrap_number )
 
 
-    #LASSO-MIDAS, cross-validation for log-likelihood score
+    # LASSO-MIDAS, cross-validation for log-likelihood score
     if (fit_cv_MIDAS$alpha_out == 1){
       fit_cv_MIDAS_LASSO = fit_cv_MIDAS
       test_predictions_MIDAS_LASSO = test_predictions_MIDAS
@@ -192,7 +194,7 @@ for (t in c( 8, 8.5, 9)) {
     }
     AUC_MIDAS_LASSO = ROC_censor_N(data = test_dataset, prediction = test_predictions_MIDAS_LASSO, t = t )$AUC
 
-    #LASSO-MIDAS, cross-validation for AUC
+    # LASSO-MIDAS, cross-validation for AUC
     if (fit_cv_MIDAS$alpha_AUC == 1){
       fit_cv_MIDAS_LASSO = fit_cv_MIDAS
       test_predictions_MIDAS_LASSO_AUC = test_predictions_MIDAS_AUC
@@ -233,7 +235,7 @@ for (t in c( 8, 8.5, 9)) {
     AUC_LASSO_bootstrap =  ROC_N_bootstrap(data = test_dataset, prediction = test_predictions_LASSO, t = t, sim_number = bootstrap_number )
     AUC_LASSO_AUC_bootstrap =  ROC_N_bootstrap(data = test_dataset, prediction = test_predictions_LASSO_AUC, t = t, sim_number = bootstrap_number )
 
-    #return results
+    # return results
     results = list(
       AUC_LASSO = round( AUC_LASSO, 3 ), AUC_MIDAS = round(AUC_MIDAS, 3 ), AUC_MIDAS_LASSO = round(AUC_MIDAS_LASSO, 3 ),
       AUC_LASSO_bootstrap = AUC_LASSO_bootstrap, AUC_MIDAS_bootstrap = AUC_MIDAS_bootstrap, AUC_MIDAS_LASSO_bootstrap = AUC_MIDAS_LASSO_bootstrap,
