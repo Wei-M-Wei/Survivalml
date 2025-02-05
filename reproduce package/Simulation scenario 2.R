@@ -5,13 +5,13 @@
 
 
 #============================================================
-# Reproduce simulation
+# Reproduce simulation, scenario 1， Table 2
 #============================================================
 
 
 
+# clear the environment and import necessary functions
 rm(list = ls())
-
 source('import functions for empirical application.R')
 
 
@@ -62,7 +62,6 @@ generateData_AR <-
     Xdw_g <- matrix(NA, nrow = TN, ncol = (degree+1)*numhv)
     # storage for beta weighted quarterly
     Xdw_true_g <- matrix(NA, nrow = TN, ncol = numtrue)
-    ##########################################################
 
     Xd <- matrix(0, nrow = TN*jmax, ncol = p)
 
@@ -159,7 +158,8 @@ paral_independent = function(result,it){
   res_fit_av_MIDAS_LASSO = colMeans(res_fit_MIDAS_LASSO)
   res_fit_var_LASSO = mean(apply(res_fit_LASSO, 2, var))
   b_true = c(beta_true[1] + log((t - s)), beta_true[-1]  +  log((t - s)))
-  ##########################################
+
+  # parameter estimation evaluation for w1
   w1_tr = w1 * b_true[1+1]
   w1_es = w%*%as.numeric(res_fit_av_MIDAS[(1+1):(1+1+degree)])
   w1_es_MIDAS_LASSO = w%*%as.numeric(res_fit_av_MIDAS_LASSO[(1+1):(1+1+degree)])
@@ -170,7 +170,8 @@ paral_independent = function(result,it){
   w1_es_MSE_LASSO = round(mean(as.numeric((w1_tr - w1_es_LASSO)^2) + apply(as.matrix(res_fit_LASSO[, (1  + 1):(1  + 1 + jmax - 1)]), 2, var)), 5)
   w1_es_sd_MIDAS_LASSO = round(mean(apply(as.matrix(res_fit_MIDAS_LASSO[, (1  + 1):(1  + 1 + degree)])%*%t(w), 2, sd)), 5)
   w1_es_MSE_MIDAS_LASSO = round(mean(as.numeric((w1_tr - w1_es_MIDAS_LASSO)^2) + apply(as.matrix(res_fit_MIDAS_LASSO[, (1  + 1):(1  + 1 + degree)])%*%t(w), 2, var)), 5)
-  #########################################
+
+  # parameter estimation evaluation for w1
   w2_tr = w2 * b_true[1+1+1]
   w2_es = w%*%as.numeric(res_fit_av_MIDAS[(1+1+degree+1):(1+1+degree+1+degree)])
   w2_es_LASSO = as.numeric(res_fit_av_LASSO[(1+1+jmax):(1+1+jmax*2-1)])
@@ -181,8 +182,8 @@ paral_independent = function(result,it){
   w2_es_MSE = round(mean(as.numeric((w2_tr - w2_es)^2) + apply(as.matrix(res_fit_MIDAS[, (1+1+degree+1):(1+1+degree+1+degree)])%*%t(w), 2, var)), 5)
   w2_es_MSE_LASSO = round(mean(as.numeric((w2_tr - w2_es_LASSO)^2) + apply(as.matrix(res_fit_LASSO[, (1+1+jmax):(1+1+jmax*2-1)]), 2, var)), 5)
   w2_es_MSE_MIDAS_LASSO = round(mean(as.numeric((w2_tr - w2_es_MIDAS_LASSO)^2) + apply(as.matrix(res_fit_MIDAS_LASSO[, (1+1+degree+1):(1+1+degree+1+degree)])%*%t(w), 2, var)), 5)
-  ############################################################
-  #########################################################################
+
+  # return the result
   res = list(AUC_true_N = round(colMeans(AUC_true_N),3), AUC_true_N_sd = round(apply(AUC_true_N, 2, sd),3),  AUC_MIDAS_N = round(colMeans(AUC_MIDAS_N),3), AUC_MIDAS_N_sd = round(apply(AUC_MIDAS_N, 2, sd),3), AUC_LASSO_N = round(colMeans(AUC_LASSO_N),3), AUC_LASSO_N_sd = round(apply(AUC_LASSO_N, 2, sd),3), AUC_MIDAS_LASSO_N = round(colMeans(AUC_MIDAS_LASSO_N),3), AUC_MIDAS_LASSO_N_sd = round(apply(AUC_MIDAS_LASSO_N, 2, sd),3),
              w1_es_MSE = w1_es_MSE, w1_es_sd = w1_es_sd,
              w2_es_MSE = w2_es_MSE, w2_es_sd = w2_es_sd,
@@ -204,6 +205,9 @@ test_censoring_AR = function(s = s, n, censor_strength){
   return(res/100)
 }
 
+#============================================================
+# main part
+#============================================================
 
 # initial setting
 s = 6
