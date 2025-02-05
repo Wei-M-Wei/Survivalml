@@ -5,7 +5,7 @@
 
 
 #============================================================
-# Reproduce empirical application when s = 10 years and t = 13,13.5,14 years
+# Reproduce empirical application when s = 10 years and t = 13,13.5,14 years, Table 5
 #============================================================
 
 
