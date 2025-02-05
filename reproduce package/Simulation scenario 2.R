@@ -254,12 +254,6 @@ test_censoring_AR( s = s, n = 1000, censor_strength = censor)
 # Generate the prediction horizon t
 data = generateData_AR( s = s, n = 1200, numhv = numhv, numtrue = numtrue, degree = degree, jmax = jmax, parameters = beta_true, censor_strength = censor) # 3, 500, 0.7
 ind = which(data$Ts <=  data$censoringtime)
-t = quantile(data$Ts[ind], probs = t_quan)
-
-#Example 5.1
-b_true = c(beta_true[1] + log((t - s)), beta_true[-1]  +  log((t - s)))
-
-#
 t_quantile = c(quantile(data$Ts[ind], probs = 0.1), quantile(data$Ts[ind], probs = 0.3), quantile(data$Ts[ind], probs = 0.5))
 censor_strength = c(censor)
 
