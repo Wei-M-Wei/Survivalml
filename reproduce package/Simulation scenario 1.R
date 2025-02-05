@@ -5,11 +5,11 @@
 
 
 #============================================================
-# Reproduce simulation, scenario 1
+# Reproduce simulation, scenario 1， Table 2
 #============================================================
 
 
-
+# clear the environment and import necessary functions
 rm(list = ls())
 
 source('import functions for empirical application.R')
@@ -88,8 +88,8 @@ generateData_AR <-
       }
     }
 
+    # transform to its absolute value, as described in the paper
     Xdd = abs(Xdd)
-
 
     # storage for all lags, which is ued for LASSO-MIDAS
     X_orginal = matrix(1, nrow = TN)
@@ -160,7 +160,8 @@ paral_independent = function(result,it){
   res_fit_av_MIDAS_LASSO = colMeans(res_fit_MIDAS_LASSO)
   res_fit_var_LASSO = mean(apply(res_fit_LASSO, 2, var))
   b_true = c(beta_true[1] + log((t - s)), beta_true[-1]  +  log((t - s)))
-  ##########################################
+
+  # parameter estimation evaluation for w1
   w1_tr = w1 * b_true[1+1]
   w1_es = w%*%as.numeric(res_fit_av_MIDAS[(1+1):(1+1+degree)])
   w1_es_MIDAS_LASSO = w%*%as.numeric(res_fit_av_MIDAS_LASSO[(1+1):(1+1+degree)])
@@ -171,7 +172,8 @@ paral_independent = function(result,it){
   w1_es_MSE_LASSO = round(mean(as.numeric((w1_tr - w1_es_LASSO)^2) + apply(as.matrix(res_fit_LASSO[, (1  + 1):(1  + 1 + jmax - 1)]), 2, var)), 5)
   w1_es_sd_MIDAS_LASSO = round(mean(apply(as.matrix(res_fit_MIDAS_LASSO[, (1  + 1):(1  + 1 + degree)])%*%t(w), 2, sd)), 5)
   w1_es_MSE_MIDAS_LASSO = round(mean(as.numeric((w1_tr - w1_es_MIDAS_LASSO)^2) + apply(as.matrix(res_fit_MIDAS_LASSO[, (1  + 1):(1  + 1 + degree)])%*%t(w), 2, var)), 5)
-  #########################################
+
+  # parameter estimation evaluation for w1
   w2_tr = w2 * b_true[1+1+1]
   w2_es = w%*%as.numeric(res_fit_av_MIDAS[(1+1+degree+1):(1+1+degree+1+degree)])
   w2_es_LASSO = as.numeric(res_fit_av_LASSO[(1+1+jmax):(1+1+jmax*2-1)])
@@ -182,8 +184,8 @@ paral_independent = function(result,it){
   w2_es_MSE = round(mean(as.numeric((w2_tr - w2_es)^2) + apply(as.matrix(res_fit_MIDAS[, (1+1+degree+1):(1+1+degree+1+degree)])%*%t(w), 2, var)), 5)
   w2_es_MSE_LASSO = round(mean(as.numeric((w2_tr - w2_es_LASSO)^2) + apply(as.matrix(res_fit_LASSO[, (1+1+jmax):(1+1+jmax*2-1)]), 2, var)), 5)
   w2_es_MSE_MIDAS_LASSO = round(mean(as.numeric((w2_tr - w2_es_MIDAS_LASSO)^2) + apply(as.matrix(res_fit_MIDAS_LASSO[, (1+1+degree+1):(1+1+degree+1+degree)])%*%t(w), 2, var)), 5)
-  ############################################################
-  #########################################################################
+
+  # return the result
   res = list(AUC_true_N = round(colMeans(AUC_true_N),3), AUC_true_N_sd = round(apply(AUC_true_N, 2, sd),3),  AUC_MIDAS_N = round(colMeans(AUC_MIDAS_N),3), AUC_MIDAS_N_sd = round(apply(AUC_MIDAS_N, 2, sd),3), AUC_LASSO_N = round(colMeans(AUC_LASSO_N),3), AUC_LASSO_N_sd = round(apply(AUC_LASSO_N, 2, sd),3), AUC_MIDAS_LASSO_N = round(colMeans(AUC_MIDAS_LASSO_N),3), AUC_MIDAS_LASSO_N_sd = round(apply(AUC_MIDAS_LASSO_N, 2, sd),3),
              w1_es_MSE = w1_es_MSE, w1_es_sd = w1_es_sd,
              w2_es_MSE = w2_es_MSE, w2_es_sd = w2_es_sd,
@@ -195,6 +197,7 @@ paral_independent = function(result,it){
   return(res)
 }
 
+# calculate the censoring rate of a simulation dataset
 test_censoring_AR = function(s = s, n, censor_strength){
   res = 0
   for (i in seq(100)){
@@ -204,10 +207,15 @@ test_censoring_AR = function(s = s, n, censor_strength){
   return(res/100)
 }
 
+
+#============================================================
+# main part
+#============================================================
+
 # initial setting
 s = 6
 
-#quratker/year frequency
+#quarter/year frequency
 high_frequency = 4
 
 # degree of the polynomials
@@ -250,12 +258,6 @@ test_censoring_AR( s = s, n = 1000, censor_strength = censor)
 set.seed(1)
 data = generateData_AR( s = s, n = 1200, numhv = numhv, numtrue = numtrue, degree = degree, jmax = jmax, parameters = beta_true, censor_strength = censor) # 3, 500, 0.7
 ind = which(data$Ts <=  data$censoringtime)
-t = quantile(data$Ts[ind], probs = t_quan)
-
-#Example 5.1
-b_true = c(beta_true[1] + log((t - s)), beta_true[-1]  +  log((t - s)))
-
-#
 t_quantile = c(quantile(data$Ts[ind], probs = 0.1), quantile(data$Ts[ind], probs = 0.3), quantile(data$Ts[ind], probs = 0.5))
 censor_strength = c(censor)
 
