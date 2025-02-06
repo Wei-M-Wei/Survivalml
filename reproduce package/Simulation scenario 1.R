@@ -168,10 +168,13 @@ paral_independent = function(result,it){
   w1_es_LASSO = as.numeric(res_fit_av_LASSO[(1+1):(1+1+jmax-1)])
   w1_es_sd = round(mean(apply(as.matrix(res_fit_MIDAS[, (1  + 1):(1  + 1 + degree)])%*%t(w), 2, sd)), 5)
   # here we use MSE = bias^2 + variance, which is close to direct calculation of MASE when the simulation repetation goes large enough
+   # w1_es_MSE = mean(colMeans( (w1_tr - w %*% t(res_fit_MIDAS[ , (1+1):(1+1+degree)]) )^2 ))
   w1_es_MSE = round(mean(as.numeric((w1_tr - w1_es)^2) + apply(as.matrix(res_fit_MIDAS[, (1  + 1):(1  + 1 + degree)])%*%t(w), 2, var)), 5)
   w1_es_sd_LASSO = round(mean(apply(as.matrix(res_fit_LASSO[, (1  + 1):(1  + 1 + jmax - 1)]), 2, sd)), 5)
+  # w1_es_MSE_LASSO = mean(colMeans( (w1_tr -  t(res_fit_LASSO[, (1  + 1):(1  + 1 + jmax - 1)]) )^2 ))
   w1_es_MSE_LASSO = round(mean(as.numeric((w1_tr - w1_es_LASSO)^2) + apply(as.matrix(res_fit_LASSO[, (1  + 1):(1  + 1 + jmax - 1)]), 2, var)), 5)
   w1_es_sd_MIDAS_LASSO = round(mean(apply(as.matrix(res_fit_MIDAS_LASSO[, (1  + 1):(1  + 1 + degree)])%*%t(w), 2, sd)), 5)
+  # w1_es_MSE_MIDAS_LASSO = mean(colMeans( (w1_tr - w %*% t(res_fit_MIDAS_LASSO[ , (1+1):(1+1+degree)]) )^2 ))
   w1_es_MSE_MIDAS_LASSO = round(mean(as.numeric((w1_tr - w1_es_MIDAS_LASSO)^2) + apply(as.matrix(res_fit_MIDAS_LASSO[, (1  + 1):(1  + 1 + degree)])%*%t(w), 2, var)), 5)
 
   # parameter estimation evaluation for w1
@@ -182,7 +185,10 @@ paral_independent = function(result,it){
   w2_es_sd = round(mean(apply(as.matrix(res_fit_MIDAS[, (1+1+degree+1):(1+1+degree+1+degree)])%*%t(w), 2, sd)), 5)
   w2_es_sd_LASSO = round(mean(apply(as.matrix(res_fit_LASSO[, (1+1+jmax):(1+1+jmax*2-1)]), 2, sd)), 5)
   w2_es_sd_MIDAS_LASSO = round(mean(apply(as.matrix(res_fit_MIDAS_LASSO[, (1+1+degree+1):(1+1+degree+1+degree)])%*%t(w), 2, sd)), 5)
-  w2_es_MSE = round(mean(as.numeric((w2_tr - w2_es)^2) + apply(as.matrix(res_fit_MIDAS[, (1+1+degree+1):(1+1+degree+1+degree)])%*%t(w), 2, var)), 5)
+  # w2_es_MSE = mean(colMeans( (w2_tr - w %*% t(res_fit_MIDAS[, (1+1+degree+1):(1+1+degree+1+degree)]) )^2 ))
+  # w2_es_MSE_LASSO = mean(colMeans( (w2_tr -  t(res_fit_LASSO[, (1+1+jmax):(1+1+jmax*2-1)]) )^2 ))
+  # w2_es_MSE_MIDAS_LASSO = mean(colMeans( (w2_tr - w %*% t(res_fit_MIDAS_LASSO[, (1+1+degree+1):(1+1+degree+1+degree)] ))^2 ))
+  w2_es_MSE = round(mean( as.numeric((w2_tr - w2_es)^2) + apply(as.matrix(res_fit_MIDAS[, (1+1+degree+1):(1+1+degree+1+degree)])%*%t(w), 2, var)), 5)
   w2_es_MSE_LASSO = round(mean(as.numeric((w2_tr - w2_es_LASSO)^2) + apply(as.matrix(res_fit_LASSO[, (1+1+jmax):(1+1+jmax*2-1)]), 2, var)), 5)
   w2_es_MSE_MIDAS_LASSO = round(mean(as.numeric((w2_tr - w2_es_MIDAS_LASSO)^2) + apply(as.matrix(res_fit_MIDAS_LASSO[, (1+1+degree+1):(1+1+degree+1+degree)])%*%t(w), 2, var)), 5)
 
