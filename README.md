@@ -22,10 +22,10 @@ This package is based on code from the following sources:
 ## Features
 - **Main functionality**: The primary function of this package estimates outcome weighted logistic regression with sparse group LASSO penalty, which can also be reduced to a standard logistic regression model and allows for censored data. For more details, see the paper [^3].
 - **Validation example**: An example is included to compare this package with:
-  - **glmnet** for LASSO
+  - **glmnet** for LASSO.
   - **optim** for incorporating weights into the logistic model.
     
-The following example can be used to verify the correctness of the package, see more details in 'check the correctness of this package.R'. Another example of recovering the true parameters in the weighted logistic regression is 'correctness check for weighted logistic regression without penalty and MIDAS.R'.
+The example can be used to verify the correctness of the package, see more details in 'check the correctness of this package.R'. Another example of recovering the true parameters in the weighted logistic regression is 'correctness check for weighted logistic regression without penalty and MIDAS.R'.
 
 ## Additional resources
 - **Replication code**: The repository includes replication code for all simulations and empirical applications.
