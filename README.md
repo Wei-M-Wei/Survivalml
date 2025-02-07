@@ -45,14 +45,16 @@ intercept <- 5
 coef_x1 <- 2
 coef_x2 <- 0
 coef_x3 <- rep(0,p)
-#Generate y based on logistic function
+
+# Generate y based on logistic function
 logistic_function <- intercept + coef_x1 * x1 + coef_x2 * x2 + x3 %*% coef_x3
 probabilities <- plogis(logistic_function)
 y <- rbinom(n, 1, probabilities)
 X <- data.frame(x1, x2, x3)
 X <- data.matrix(X)
 index <- seq(p+2)
-#weight is specified randomly
+
+# weight is specified randomly
 weight <- c(rep(0.2,100), rep(1,100), rep(1,n - 200))
 
 # LASSO when alpha = 1, Group LASSO when alpha = 0
