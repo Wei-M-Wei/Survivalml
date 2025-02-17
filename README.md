@@ -84,4 +84,5 @@ fit_cv = cv.survival_sparsegl(X, y, group = index, nlambda = 100, asparse = 0.5,
 
 [^2]: Babii, A., Ghysels, E., & Striaukas, J. (2022). Machine learning time series regressions with an application to nowcasting. Journal of Business & Economic Statistics, 40(3), 1094-1106.
 
-[^3]: Miao, W., Beyhum, J., Striaukas, J., & Van Keilegom, I. High-dimensional censored MIDAS logistic regression for corporate survival forecasting.
+[^3]: Miao, W., Beyhum, J., Striaukas, J., & Van Keilegom, I. High-dimensional censored MIDAS logistic regression for corporate survival forecasting. [arXiv:2502.09740
+Search](https://arxiv.org/abs/2502.09740).
