@@ -12,7 +12,7 @@ library(Survivalml)
 ```
 A CRAN release is coming soon.
 
-Other packages should be installed
+Several other packages are needed
 ```{r }
 packages <- unique(c("midasml", "dplyr", "RSpectra", "pROC", "openxlsx", "ggplot2", 
               "xtable", "caret", "survival", "parallel", "foreach", "doParallel", 
