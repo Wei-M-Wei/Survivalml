@@ -12,6 +12,23 @@ library(Survivalml)
 ```
 A CRAN release is coming soon.
 
+Other packages should be installed
+```{r }
+packages <- unique(c("midasml", "dplyr", "RSpectra", "pROC", "openxlsx", "ggplot2", 
+              "xtable", "caret", "survival", "parallel", "foreach", "doParallel", 
+              "PRROC", "MLmetrics", "survivalROC", "pracma", "dotCall64", 
+              "rlang", "readxl", "lubridate", "timeROC"))
+
+install_if_missing <- function(pkg) {
+  if (!requireNamespace(pkg, quietly = TRUE)) {
+    install.packages(pkg, dependencies = TRUE)
+  }
+}
+
+sapply(packages, install_if_missing)
+
+lapply(packages, library, character.only = TRUE)
+```
 
 ## Description
 
