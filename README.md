@@ -6,6 +6,12 @@ To install and use the package, we recommend downloading 'Survivalml_0.1.0.tar.g
 ```{r }
 install.packages('your path/Survivalml_0.1.0.tar.gz')
 ```
+Another possible way to install
+```{r }
+install.packages("devtools")  # If not already installed
+library(devtools)
+install_github("Wei-M-Wei/Survivalml")
+```
 Once installed, load the package with
 ```{r }
 library(Survivalml)
