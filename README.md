@@ -1,6 +1,4 @@
-Download the latest version:  
-[![Download](https://img.shields.io/badge/Download-ZIP-blue.svg)](https://github.com/Wei-M-Wei/Survivalml/raw/master/Survivalml_0.1.0.tar.gz)
-## Survivalml
+## Survivalml [![Download](https://img.shields.io/badge/Download-ZIP-blue.svg)](https://github.com/Wei-M-Wei/Survivalml/raw/master/Survivalml_0.1.0.tar.gz)
 
 This is the first version of the R package 'Survivalml'. Please note that it does not include the raw dataset used in the empirical section. The dataset is available upon request.
 
