@@ -1,8 +1,13 @@
+#'@title High-dimensional censored MIDAS logistic regression for corporate survival forecasting
+#'
+#' @description R package 'Survivalml' is dedicated to run predictive high-dimensional mixed data logistic regression model which allows for censored data.
+#'
+#' @name survival_sparsegl
 #' @description
 #' Fits regularization paths for sparse group-lasso penalized learning problems at a
 #' sequence of regularization parameters `lambda`.
 #' Note that the objective function for maximum likely hood function is
-#' \deqn{MSE + \lambda penalty}
+#' \deqn{log likelihood + \lambda penalty}
 #' Users can also tweak the penalty by choosing a different penalty factor.
 #'
 #'

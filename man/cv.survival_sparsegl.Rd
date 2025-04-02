@@ -13,12 +13,13 @@ cv.survival_sparsegl(
   pred.loss = c("default", "mse", "deviance", "mae", "misclass", "censor", "AUC_censor"),
   nfolds = 10,
   foldid = NULL,
-  weights = NULL,
   offset = NULL,
   weight,
   intercept_zero,
   AUC = FALSE,
-  maxit = 20000,
+  data = NULL,
+  t = 0,
+  maxit = 50000,
   ...
 )
 }
@@ -64,7 +65,7 @@ be missing.}
 corresponding coefficient). These can only be used with a
 [stats::family()] object.}
 
-\item{weight}{Double vector. It represents the weighting of censored individuals.}
+\item{weight}{Double vector. It represents the weighting vector of censored individuals.}
 
 \item{maxit}{Maximum number of outer-loop iterations allowed at fixed lambda
 value. Default is `3e8`. If models do not converge, consider increasing
@@ -103,14 +104,25 @@ with each of the folds omitted. The average error and standard error
 over the folds are computed.
 }
 \examples{
-n <- 100
-p <- 20
-X <- matrix(rnorm(n * p), nrow = n)
-eps <- rnorm(n)
-beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), rep(0, (p - 15)))
-y <- X \%*\% beta_star + eps
-groups <- rep(1:(p / 5), each = 5)
-cv_fit <- cv.survival_sparsegl(X, y, groups)
+n <- 2000
+p=10
+x1 <- rnorm(n)
+x2 <- 0.2*x1 + rnorm(n)
+x3= matrix(rnorm(n*p), nrow = n, ncol = p)  # Define parameters for generating y
+intercept <- 5
+coef_x1 <- 2
+coef_x2 <- 0
+coef_x3 <- rep(0,p)
+#Generate y based on logistic function
+logistic_function <- intercept + coef_x1 * x1 + coef_x2 * x2 + x3 \%*\% coef_x3
+probabilities <- plogis(logistic_function)
+y <- rbinom(n, 1, probabilities)
+X <- data.frame(x1, x2, x3)
+X = data.matrix(X)
+index = seq(p+2)
+weight = c( rep(0.2,100), rep(1,100), rep(1,n - 200))
+fit.cv = cv.survival_sparsegl(X, y, group = index, nlambda = 1, lambda = c(0), weight = weight, intercept_zero = 0, standardize = TRUE)
+fit.cv
 
 }
 \seealso{
