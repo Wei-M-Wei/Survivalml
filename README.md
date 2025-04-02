@@ -15,6 +15,9 @@ install_github("Wei-M-Wei/Survivalml")
 Once installed, load the package with
 ```{r }
 library(Survivalml)
+
+# help() to check the details of the main function
+help(survival_spasegl)
 ```
 A CRAN release is coming soon.
 
