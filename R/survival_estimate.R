@@ -433,12 +433,18 @@ maxeig2 <- function(x) {
 #'    log-likelihood otherwise)
 #'  * `"mae"` mean absolute error, can apply to any family
 #'  * `"misclass"` for classification only, misclassification error.
+#'  * `"censor"` for classification only, negative weighted log-likelihood.
+#'  * `"AUCcensor"` for classification only, AUC with censored data.
 #' @param nfolds Number of folds - default is 10. Although `nfolds` can be
 #'   as large as the sample size (leave-one-out CV), it is not recommended for
 #'   large datasets. Smallest value allowable is `nfolds = 3`.
 #' @param foldid An optional vector of values between 1 and `nfolds`
 #'   identifying which fold each observation is in. If supplied, `nfolds` can
 #'   be missing.
+#' The following parameters are specialized for classification with censored data. If not needed, do not specify.
+#' @param AUC If True, allows for cross-validation by maximizing AUC.
+#' @param data data contains data$time which is min(T, C) and data$status which is the indicator of censoring status.
+#' @param t prediction horizon.
 #' @param ... Additional arguments to [survival_sparsegl()].
 #'
 #' @return An object of class [cv.survival_sparsegl()] is returned, which is a
