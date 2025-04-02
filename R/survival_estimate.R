@@ -85,18 +85,18 @@
 #'   These can only be used with a [stats::family()] object.
 #'
 #' @return An object with S3 class `"survival_sparsegl"`. Among the list components:
-#' * `call` The call that produced this object.
-#' * `b0` Intercept sequence of length `length(lambda)`.
-#' * `beta` A `p` x `length(lambda)` sparse matrix of coefficients.
-#' * `df` The number of features with nonzero coefficients for each value of
-#'     `lambda`.
-#' * `dim` Dimension of coefficient matrix.
-#' * `lambda` The actual sequence of `lambda` values used.
-#' * `npasses` Total number of iterations summed over all `lambda` values.
-#' * `jerr` Error flag, for warnings and errors, 0 if no error.
-#' * `group` A vector of consecutive integers describing the grouping of the
-#'     coefficients.
-#' * `nobs` The number of observations used to estimate the model.
+#' \item{call}{The call that produced this object.}
+#' \item{b0}{Intercept sequence of length `length(lambda)`.}
+#' \item{beta}{A `p` x `length(lambda)` sparse matrix of coefficients.}
+#' \item{df}{The number of features with nonzero coefficients for each value of
+#'     `lambda`.}
+#' \item{dim}{Dimension of coefficient matrix.}
+#' \item{lambda}{The actual sequence of `lambda` values used.}
+#' \item{npasses}{Total number of iterations summed over all `lambda` values.}
+#' \item{jerr}{Error flag, for warnings and errors, 0 if no error.}
+#' \item{group}{A vector of consecutive integers describing the grouping of the
+#'     coefficients.}
+#' \item{nobs}{The number of observations used to estimate the model.}
 
 #'
 #'

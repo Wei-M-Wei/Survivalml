@@ -51,21 +51,30 @@ decreasing order.}
 * `"deviance"` the default (mse for Gaussian regression, and negative
   log-likelihood otherwise)
 * `"mae"` mean absolute error, can apply to any family
-* `"misclass"` for classification only, misclassification error.}
+* `"misclass"` for classification only, misclassification error.
+* `"censor"` for classification only, negative weighted log-likelihood.
+* `"AUCcensor"` for classification only, AUC with censored data.}
 
 \item{nfolds}{Number of folds - default is 10. Although `nfolds` can be
 as large as the sample size (leave-one-out CV), it is not recommended for
 large datasets. Smallest value allowable is `nfolds = 3`.}
 
 \item{foldid}{An optional vector of values between 1 and `nfolds`
-identifying which fold each observation is in. If supplied, `nfolds` can
-be missing.}
+  identifying which fold each observation is in. If supplied, `nfolds` can
+  be missing.
+The following parameters are specialized for classification with censored data. If not needed, do not specify.}
 
 \item{offset}{Double vector. Optional offset (constant predictor without a
 corresponding coefficient). These can only be used with a
 [stats::family()] object.}
 
 \item{weight}{Double vector. It represents the weighting vector of censored individuals.}
+
+\item{AUC}{If True, allows for cross-validation by maximizing AUC.}
+
+\item{data}{data contains data$time which is min(T, C) and data$status which is the indicator of censoring status.}
+
+\item{t}{prediction horizon.}
 
 \item{maxit}{Maximum number of outer-loop iterations allowed at fixed lambda
 value. Default is `3e8`. If models do not converge, consider increasing
