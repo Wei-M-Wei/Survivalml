@@ -17,7 +17,7 @@ Once installed, load the package with
 library(Survivalml)
 
 # help() to check the details of the main function
-help(survival_spasegl)
+help(survival_sparsegl)
 ```
 A CRAN release is coming soon.
 
