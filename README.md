@@ -41,7 +41,7 @@ lapply(packages, library, character.only = TRUE)
 
 ## Description
 
-This package is based on code from the following sources:
+This package is developed based on code from the following sources:
 - **sparsegl** (https://cran.r-project.org/web/packages/sparsegl/index.html): Provides a fast implementation of the sparse-group LASSO estimator [^1].
 - **midasml** (https://cran.r-project.org/web/packages/midasml/index.html): Applies MIDAS into logistic regression [^2].
 
