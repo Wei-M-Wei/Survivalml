@@ -13,13 +13,12 @@ cv.survival_sparsegl(
   pred.loss = c("default", "mse", "deviance", "mae", "misclass", "censor", "AUC_censor"),
   nfolds = 10,
   foldid = NULL,
+  weights = NULL,
   offset = NULL,
   weight,
   intercept_zero,
   AUC = FALSE,
-  data = NULL,
-  t = 0,
-  maxit = 50000,
+  maxit = 20000,
   ...
 )
 }
@@ -51,30 +50,21 @@ decreasing order.}
 * `"deviance"` the default (mse for Gaussian regression, and negative
   log-likelihood otherwise)
 * `"mae"` mean absolute error, can apply to any family
-* `"misclass"` for classification only, misclassification error.
-* `"censor"` for classification only, negative weighted log-likelihood.
-* `"AUCcensor"` for classification only, AUC with censored data.}
+* `"misclass"` for classification only, misclassification error.}
 
 \item{nfolds}{Number of folds - default is 10. Although `nfolds` can be
 as large as the sample size (leave-one-out CV), it is not recommended for
 large datasets. Smallest value allowable is `nfolds = 3`.}
 
 \item{foldid}{An optional vector of values between 1 and `nfolds`
-  identifying which fold each observation is in. If supplied, `nfolds` can
-  be missing.
-The following parameters are specialized for classification with censored data. If not needed, do not specify.}
+identifying which fold each observation is in. If supplied, `nfolds` can
+be missing.}
 
 \item{offset}{Double vector. Optional offset (constant predictor without a
 corresponding coefficient). These can only be used with a
 [stats::family()] object.}
 
-\item{weight}{Double vector. It represents the weighting vector of censored individuals.}
-
-\item{AUC}{If True, allows for cross-validation by maximizing AUC.}
-
-\item{data}{data contains data$time which is min(T, C) and data$status which is the indicator of censoring status.}
-
-\item{t}{prediction horizon.}
+\item{weight}{Double vector. It represents the weighting of censored individuals.}
 
 \item{maxit}{Maximum number of outer-loop iterations allowed at fixed lambda
 value. Default is `3e8`. If models do not converge, consider increasing
@@ -113,25 +103,14 @@ with each of the folds omitted. The average error and standard error
 over the folds are computed.
 }
 \examples{
-n <- 2000
-p=10
-x1 <- rnorm(n)
-x2 <- 0.2*x1 + rnorm(n)
-x3= matrix(rnorm(n*p), nrow = n, ncol = p)  # Define parameters for generating y
-intercept <- 5
-coef_x1 <- 2
-coef_x2 <- 0
-coef_x3 <- rep(0,p)
-#Generate y based on logistic function
-logistic_function <- intercept + coef_x1 * x1 + coef_x2 * x2 + x3 \%*\% coef_x3
-probabilities <- plogis(logistic_function)
-y <- rbinom(n, 1, probabilities)
-X <- data.frame(x1, x2, x3)
-X = data.matrix(X)
-index = seq(p+2)
-weight = c( rep(0.2,100), rep(1,100), rep(1,n - 200))
-fit.cv = cv.survival_sparsegl(X, y, group = index, nlambda = 1, lambda = c(0), weight = weight, intercept_zero = 0, standardize = TRUE)
-fit.cv
+n <- 100
+p <- 20
+X <- matrix(rnorm(n * p), nrow = n)
+eps <- rnorm(n)
+beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), rep(0, (p - 15)))
+y <- X \%*\% beta_star + eps
+groups <- rep(1:(p / 5), each = 5)
+cv_fit <- cv.survival_sparsegl(X, y, groups)
 
 }
 \seealso{

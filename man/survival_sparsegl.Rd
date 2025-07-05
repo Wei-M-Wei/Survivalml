@@ -2,7 +2,7 @@
 % Please edit documentation in R/survival_estimate.R
 \name{survival_sparsegl}
 \alias{survival_sparsegl}
-\title{High-dimensional censored MIDAS logistic regression for corporate survival forecasting}
+\title{Regularization paths for sparse group-lasso models}
 \usage{
 survival_sparsegl(
   x,
@@ -40,7 +40,7 @@ is a vector of measurements and each column is a feature. Objects of class
 a vector of integers taking 2 unique values. For a factor, the last level
 in alphabetical order is the target class.}
 
-\item{weight}{Double vector. It represents the weighting vector of censored individuals.}
+\item{weight}{Double vector. It represents the weighting of censored individuals.}
 
 \item{group}{Integer. A vector of consecutive integers describing the
 grouping of the coefficients (see example below).}
@@ -126,48 +126,49 @@ value. Default is `3e8`. If models do not converge, consider increasing
 }
 \value{
 An object with S3 class `"survival_sparsegl"`. Among the list components:
-\item{call}{The call that produced this object.}
-\item{b0}{Intercept sequence of length `length(lambda)`.}
-\item{beta}{A `p` x `length(lambda)` sparse matrix of coefficients.}
-\item{df}{The number of features with nonzero coefficients for each value of
-    `lambda`.}
-\item{dim}{Dimension of coefficient matrix.}
-\item{lambda}{The actual sequence of `lambda` values used.}
-\item{npasses}{Total number of iterations summed over all `lambda` values.}
-\item{jerr}{Error flag, for warnings and errors, 0 if no error.}
-\item{group}{A vector of consecutive integers describing the grouping of the
-    coefficients.}
-\item{nobs}{The number of observations used to estimate the model.}
+* `call` The call that produced this object.
+* `b0` Intercept sequence of length `length(lambda)`.
+* `beta` A `p` x `length(lambda)` sparse matrix of coefficients.
+* `df` The number of features with nonzero coefficients for each value of
+    `lambda`.
+* `dim` Dimension of coefficient matrix.
+* `lambda` The actual sequence of `lambda` values used.
+* `npasses` Total number of iterations summed over all `lambda` values.
+* `jerr` Error flag, for warnings and errors, 0 if no error.
+* `group` A vector of consecutive integers describing the grouping of the
+    coefficients.
+* `nobs` The number of observations used to estimate the model.
 }
 \description{
-R package 'Survivalml' is dedicated to run predictive high-dimensional mixed data logistic regression model which allows for censored data.
-
 Fits regularization paths for sparse group-lasso penalized learning problems at a
 sequence of regularization parameters `lambda`.
-Note that the objective function for maximum likely hood function is
-\deqn{log likelihood + \lambda penalty}
+Note that the objective function for least squares is
+\deqn{RSS/(2n) + \lambda penalty}
 Users can also tweak the penalty by choosing a different penalty factor.
 }
 \examples{
-n <- 2000
-p=10
-x1 <- rnorm(n)
-x2 <- 0.2*x1 + rnorm(n)
-x3= matrix(rnorm(n*p), nrow = n, ncol = p)  # Define parameters for generating y
-intercept <- 5
-coef_x1 <- 2
-coef_x2 <- 0
-coef_x3 <- rep(0,p)
-#Generate y based on logistic function
-logistic_function <- intercept + coef_x1 * x1 + coef_x2 * x2 + x3 \%*\% coef_x3
-probabilities <- plogis(logistic_function)
-y <- rbinom(n, 1, probabilities)
-X <- data.frame(x1, x2, x3)
-X = data.matrix(X)
-index = seq(p+2)
-weight = c( rep(0.2,100), rep(1,100), rep(1,n - 200))
-fit = survival_sparsegl(X, y, group = index, nlambda = 1, lambda = c(0), weight = weight, intercept_zero = 0, standardize = TRUE)
-fit
+n <- 100
+p <- 20
+X <- matrix(rnorm(n * p), nrow = n)
+eps <- rnorm(n)
+beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), rep(0, (p - 15)))
+y <- X \%*\% beta_star + eps
+groups <- rep(1:(p / 5), each = 5)
+fit <- survival_sparsegl(X, y, group = groups)
+
+yp <- rpois(n, abs(X \%*\% beta_star))
+fit_pois <- survival_sparsegl(X, yp, group = groups, family = poisson())
+n <- 100
+p <- 20
+X <- matrix(rnorm(n * p), nrow = n)
+eps <- rnorm(n)
+beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), rep(0, (p - 15)))
+y <- X \%*\% beta_star + eps
+groups <- rep(1:(p / 5), each = 5)
+fit <- survival_sparsegl(X, y, group = groups)
+
+yp <- rpois(n, abs(X \%*\% beta_star))
+fit_pois <- survival_sparsegl(X, yp, group = groups, family = poisson())
 }
 \seealso{
 [cv.survival_sparsegl()] and [`predict()`][predict.survival_sparsegl()], and [`coef()`][coef.survival_sparsegl()]

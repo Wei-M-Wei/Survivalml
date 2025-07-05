@@ -37,7 +37,7 @@ beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), rep(0, (p - 15)))
 y <- X \%*\% beta_star + eps
 groups <- rep(1:(p / 5), each = 5)
 fit1 <- survival_sparsegl(X, y, group = groups)
-coef.survival_sparsegl(fit1)
+coef(fit1, s = c(0.02, 0.03))
 }
 \seealso{
 [survival_sparsegl()] and [predict.survival_sparsegl()].

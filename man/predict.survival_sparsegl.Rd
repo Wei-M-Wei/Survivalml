@@ -50,6 +50,17 @@ function will use linear interpolation to make predictions. The new values
 are interpolated using a fraction of coefficients from both left and right
 `lambda` indices.
 }
+\examples{
+n <- 100
+p <- 20
+X <- matrix(rnorm(n * p), nrow = n)
+eps <- rnorm(n)
+beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), rep(0, (p - 15)))
+y <- X \%*\% beta_star + eps
+groups <- rep(1:(p / 5), each = 5)
+fit1 <- survival_sparsegl(X, y, group = groups)
+predict(fit1, newx = X[10, ], s = fit1$lambda[3:5])
+}
 \seealso{
 [survival_sparsegl()], [coef.survival_sparsegl()].
 }

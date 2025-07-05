@@ -1,13 +1,8 @@
-#'@title High-dimensional censored MIDAS logistic regression for corporate survival forecasting
-#'
-#' @description R package 'Survivalml' is dedicated to run predictive high-dimensional mixed data logistic regression model which allows for censored data.
-#'
-#' @name survival_sparsegl
 #' @description
 #' Fits regularization paths for sparse group-lasso penalized learning problems at a
 #' sequence of regularization parameters `lambda`.
 #' Note that the objective function for maximum likely hood function is
-#' \deqn{log likelihood + \lambda penalty}
+#' \deqn{MSE + \lambda penalty}
 #' Users can also tweak the penalty by choosing a different penalty factor.
 #'
 #'
@@ -85,18 +80,18 @@
 #'   These can only be used with a [stats::family()] object.
 #'
 #' @return An object with S3 class `"survival_sparsegl"`. Among the list components:
-#' \item{call}{The call that produced this object.}
-#' \item{b0}{Intercept sequence of length `length(lambda)`.}
-#' \item{beta}{A `p` x `length(lambda)` sparse matrix of coefficients.}
-#' \item{df}{The number of features with nonzero coefficients for each value of
-#'     `lambda`.}
-#' \item{dim}{Dimension of coefficient matrix.}
-#' \item{lambda}{The actual sequence of `lambda` values used.}
-#' \item{npasses}{Total number of iterations summed over all `lambda` values.}
-#' \item{jerr}{Error flag, for warnings and errors, 0 if no error.}
-#' \item{group}{A vector of consecutive integers describing the grouping of the
-#'     coefficients.}
-#' \item{nobs}{The number of observations used to estimate the model.}
+#' * `call` The call that produced this object.
+#' * `b0` Intercept sequence of length `length(lambda)`.
+#' * `beta` A `p` x `length(lambda)` sparse matrix of coefficients.
+#' * `df` The number of features with nonzero coefficients for each value of
+#'     `lambda`.
+#' * `dim` Dimension of coefficient matrix.
+#' * `lambda` The actual sequence of `lambda` values used.
+#' * `npasses` Total number of iterations summed over all `lambda` values.
+#' * `jerr` Error flag, for warnings and errors, 0 if no error.
+#' * `group` A vector of consecutive integers describing the grouping of the
+#'     coefficients.
+#' * `nobs` The number of observations used to estimate the model.
 
 #'
 #'
@@ -433,18 +428,12 @@ maxeig2 <- function(x) {
 #'    log-likelihood otherwise)
 #'  * `"mae"` mean absolute error, can apply to any family
 #'  * `"misclass"` for classification only, misclassification error.
-#'  * `"censor"` for classification only, negative weighted log-likelihood.
-#'  * `"AUCcensor"` for classification only, AUC with censored data.
 #' @param nfolds Number of folds - default is 10. Although `nfolds` can be
 #'   as large as the sample size (leave-one-out CV), it is not recommended for
 #'   large datasets. Smallest value allowable is `nfolds = 3`.
 #' @param foldid An optional vector of values between 1 and `nfolds`
 #'   identifying which fold each observation is in. If supplied, `nfolds` can
 #'   be missing.
-#' The following parameters are specialized for classification with censored data. If not needed, do not specify.
-#' @param AUC If True, allows for cross-validation by maximizing AUC.
-#' @param data data contains data$time which is min(T, C) and data$status which is the indicator of censoring status.
-#' @param t prediction horizon.
 #' @param ... Additional arguments to [survival_sparsegl()].
 #'
 #' @return An object of class [cv.survival_sparsegl()] is returned, which is a
