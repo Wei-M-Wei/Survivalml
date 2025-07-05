@@ -517,7 +517,7 @@ cv.survival_sparsegl <- function(
   }
   ###What to do depends on the pred.loss and the model fit
   cvstuff <- cverror_survival(survival_sparsegl.object, outlist, lambda, x, y, foldid,
-                     pred.loss, weight = weight, AUC = AUC, data = data, t = t)
+                              pred.loss, weight = weight, AUC = AUC, data = data, t = t)
   cvm <- cvstuff$cvm
   cvsd <- cvstuff$cvsd
   AUC_censor = cvstuff$AUC_censor
@@ -584,11 +584,11 @@ cverror_survival.logitspgl <- function(
             AUC_cen[j, i] = 0}
           else{
             if (all(data$status[test_fold] == 1)){
-            AUC_cen[j, i] = survivalROC::survivalROC(Stime=data$time[test_fold], status= data$status[test_fold], marker = predmat[test_fold,i], predict.time = t, span = 0)$AUC
+              AUC_cen[j, i] = survivalROC::survivalROC(Stime=data$time[test_fold], status= data$status[test_fold], marker = predmat[test_fold,i], predict.time = t, span = 0)$AUC
             }else{
-            AUC_cen[j, i] = survivalROC::survivalROC(Stime=data$time[test_fold], status= data$status[test_fold], marker = predmat[test_fold,i], predict.time = t, span = 0.25*nrow(data[test_fold,])^(-1/2) )$AUC
+              AUC_cen[j, i] = survivalROC::survivalROC(Stime=data$time[test_fold], status= data$status[test_fold], marker = predmat[test_fold,i], predict.time = t, span = 0.25*nrow(data[test_fold,])^(-1/2) )$AUC
             }
-            }
+          }
         }
       }
     }

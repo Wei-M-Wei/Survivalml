@@ -7,25 +7,13 @@ Maintainer: The package maintainer <wei.miao@kuleuven.be>
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
 License: GPL-3
-Imports: 
-    cli,
-    dotCall64,
-    ggplot2,
-    magrittr,
-    Matrix,
-    methods,
-    rlang,
-    RSpectra,
-    tidyr,
-    survival,
-    survivalROC,
-    Rcpp
+Imports: cli, dotCall64, ggplot2, magrittr, Matrix, methods, rlang,
+        RSpectra, tidyr, survival, survivalROC, Rcpp
 Suggests: dplyr, gglasso, glmnet, knitr, markdown, rmarkdown, splines,
         testthat (>= 3.0.0)
 Encoding: UTF-8
-LazyData: true
 RoxygenNote: 7.2.3
-LinkingTo: 
-    Rcpp
-Depends: 
-    R (>= 2.10)
+LinkingTo: Rcpp
+Depends: R (>= 2.10)
+NeedsCompilation: yes
+Packaged: 2025-01-23 14:46:35 UTC; u0167326
