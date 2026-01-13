@@ -104,6 +104,17 @@ fit_cv = cv.survival_sparsegl(X, y, group = index, nlambda = 100, asparse = 0.5,
     
 ```
 
+## Replicated instruction
+The whole replication files can be found in ''
+- Figure 2 and Table 2: Run 'Figure 2 and Table 2 (variance ratio and correlation heatmap).r'
+- Table 4 (Predition simulation): Run 'Simulation scenario 1', 'Simulation scenario 2' , 'Simulation scenario 3' , 'Simulation scenario 4' , and 'Simulation scenario 5'
+- Table 5: Run 'SNR LASSOU scenario 1', 'SNR LASSOU scenario 2', and 'SNR LASSOU scenario 5'
+- Table 6: Results can be obtained in 'Simulation scenario 1', 'Simulation scenario 2' , 'Simulation scenario 3' , 'Simulation scenario 4' , and 'Simulation scenario 5'
+- Table 7 (Inference simulation): Run 'inference test scenario 1' and so on
+- Tables 9, 10, and 11:
+- Tables S2, S3, S4, S5, S6: Byproducts of 'Simulation scenario 1', 'Simulation scenario 2' , 'Simulation scenario 3' , 'Simulation scenario 4' , and 'Simulation scenario 5'
+- Figures S1, S2, S3, S4, S5, and Tables S7and S8: Byproduct of code for empirical application
+
 ## Reference
 
 [^1]: Liang, X., Cohen, A., Sólon Heinsfeld, A., Pestilli, F., & McDonald, D. J. (2024). sparsegl: An R Package for Estimating Sparse Group Lasso. Journal of Statistical Software, 110(6), 1–23. https://doi.org/10.18637/jss.v110.i06
