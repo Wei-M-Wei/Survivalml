@@ -104,18 +104,42 @@ fit_cv = cv.survival_sparsegl(X, y, group = index, nlambda = 100, asparse = 0.5,
     
 ```
 
-## Replicated instruction
-The whole replication files can be found in ''
-- Figure 2 and Table 2: Run 'Figure 2 and Table 2 (variance ratio and correlation heatmap).r'
-- Table 4 (Predition simulation): Run 'Simulation scenario 1', 'Simulation scenario 2' , 'Simulation scenario 3' , 'Simulation scenario 4' , and 'Simulation scenario 5'
-- Table 5: Run 'SNR LASSOU scenario 1', 'SNR LASSOU scenario 2', and 'SNR LASSOU scenario 5'
-- Table 6: Results can be obtained in 'Simulation scenario 1', 'Simulation scenario 2' , 'Simulation scenario 3' , 'Simulation scenario 4' , and 'Simulation scenario 5'
-- Table 7 (Inference simulation): Run 'inference test scenario 1' and so on
-- Tables 9, 10: Run files begin with 'application 1 ...'
-- Table 11: Run 'significance test'
-- Tables S2, S3, S4, S5, S6: Byproducts of 'Simulation scenario 1', 'Simulation scenario 2' , 'Simulation scenario 3' , 'Simulation scenario 4' , and 'Simulation scenario 5'
-- Figures S1, S2, S3, S4, S5: Byproduct of empirical application
-- Tables S7and S8: Run files begin with 'application 2 ...'
+## Replication Instructions
+
+All replication files are available in the repository root directory (`''`).
+
+To reproduce the figures and tables in the paper, run the following scripts:
+
+- **Figure 2 and Table 2 (Variance ratio and correlation heatmap)**  
+  Run: `Figure 2 and Table 2 (variance ratio and correlation heatmap).r`
+
+- **Table 4 (Prediction simulations)**  
+  Run: `Simulation scenario 1` through `Simulation scenario 5`
+
+- **Table 5 (SNR LASSO-U simulations)**  
+  Run: `SNR LASSOU scenario 1`, `SNR LASSOU scenario 2`, and `SNR LASSOU scenario 5`
+
+- **Table 6**  
+  Results are obtained from `Simulation scenario 1` through `Simulation scenario 5`
+
+- **Table 7 (Inference simulations)**  
+  Run: `inference test scenario 1` and subsequent scenarios
+
+- **Tables 9 and 10 (empirical application)**  
+  Run the files with names corresponding to the respective methods
+
+- **Table 11**  
+  Run: `significance test`
+
+- **Tables S2–S6**  
+  Generated as byproducts of `Simulation scenario 1` through `Simulation scenario 5`
+
+- **Figures S1–S5**  
+  Generated as byproducts of the empirical application
+
+- **Tables S7 and S8**  
+  Run files beginning with `application 2 ...`
+
 
 ## Reference
 
