@@ -111,10 +111,11 @@ The whole replication files can be found in ''
 - Table 5: Run 'SNR LASSOU scenario 1', 'SNR LASSOU scenario 2', and 'SNR LASSOU scenario 5'
 - Table 6: Results can be obtained in 'Simulation scenario 1', 'Simulation scenario 2' , 'Simulation scenario 3' , 'Simulation scenario 4' , and 'Simulation scenario 5'
 - Table 7 (Inference simulation): Run 'inference test scenario 1' and so on
-- Tables 9, 10, and 11:
+- Tables 9, 10: Run files begin with 'application 1 ...'
+- Table 11: Run 'significance test'
 - Tables S2, S3, S4, S5, S6: Byproducts of 'Simulation scenario 1', 'Simulation scenario 2' , 'Simulation scenario 3' , 'Simulation scenario 4' , and 'Simulation scenario 5'
 - Figures S1, S2, S3, S4, S5: Byproduct of empirical application
-- Tables S7and S8: Run files begin with 'Application 2 ...'
+- Tables S7and S8: Run files begin with 'application 2 ...'
 
 ## Reference
 
