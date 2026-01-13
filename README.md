@@ -113,7 +113,8 @@ The whole replication files can be found in ''
 - Table 7 (Inference simulation): Run 'inference test scenario 1' and so on
 - Tables 9, 10, and 11:
 - Tables S2, S3, S4, S5, S6: Byproducts of 'Simulation scenario 1', 'Simulation scenario 2' , 'Simulation scenario 3' , 'Simulation scenario 4' , and 'Simulation scenario 5'
-- Figures S1, S2, S3, S4, S5, and Tables S7and S8: Byproduct of code for empirical application
+- Figures S1, S2, S3, S4, S5: Byproduct of empirical application
+- Tables S7and S8: Run files begin with 'Application 2 ...'
 
 ## Reference
 
