@@ -104,7 +104,7 @@ fit_cv = cv.survival_sparsegl(X, y, group = index, nlambda = 100, asparse = 0.5,
     
 ```
 
-## Replication Instructions
+## Replication instructions
 
 All replication files are available in the repository root directory (`'reproduce package'`).
 
