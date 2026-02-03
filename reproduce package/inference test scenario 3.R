@@ -5,7 +5,7 @@
 
 
 #============================================================
-# Reproduce simulation, scenario 3 Table 7
+# Reproduce simulation, scenario 1 Table 2
 #============================================================
 
 
@@ -41,9 +41,9 @@ library(timeROC)
 library(glmnet)
 library(mvtnorm)
 
-# data generating process, scenario 3
+# data generating process, scenario 1
 generateData_AR <-
-  function(s, n, numhv, numtrue, degree, jmax, parameters = NA, censor_strength){
+  function(s = s, n, numhv, numtrue, degree, jmax, parameters = NA, censor_strength){
     TN = n
     p <- numhv # Set the dimension of the matrix
     degree <- degree # degree of the polynomials
@@ -70,7 +70,7 @@ generateData_AR <-
     
     for ( t in 1:(jmax)){
       if (t == 1){
-        Xdd[,t,(1:p)] <- rmvt(TN, sigma = corr_matrix, df = 2 ) #scenario 3
+        Xdd[,t,(1:p)] <- rmvt(TN, sigma = corr_matrix, df = 2 ) #scenario 1
       }
       else{
         Xdd[,t,(1:p)] <- rho * Xdd[,t-1,(1:p)] + rmvt(TN, sigma = corr_matrix*(1 - rho^2), df = 2 ) #scenario 3
@@ -205,7 +205,7 @@ inf_result = function(result,it){
 }
 
 # calculate the censoring rate of a simulation dataset
-test_censoring_AR = function(s, n, censor_strength){
+test_censoring_AR = function(s = s, n, censor_strength){
   res = 0
   for (i in seq(100)){
     data =generateData_AR( s = s, n = n, numhv= numtrue, numtrue=numtrue, degree=degree, jmax=jmax, parameters = beta_true, censor_strength = censor_strength) # 3, 500, 0.7
@@ -255,10 +255,10 @@ for (z in seq(numhv)){
 intercept_zero = 0
 
 # cross-validation
-alpha = c(0, 0.5, 1)
+alpha = c(0, 0.5, 1)# c(0, 0.4, 0.8, 1)
 
 #censoring strength gamma, which can generate approximately 81% censoring
-censor = 0.66 
+censor = 0.66 # 3.9
 test_censoring_AR( s = s, n = 1000, censor_strength = censor)
 
 # Generate the prediction horizon t
@@ -291,7 +291,7 @@ it = 500
 sig_level = 0.05
 v <- qnorm(sig_level/2, lower.tail=F)
 
-#scenario 3 N = 800
+#scenario 1 N = 800
 i=0
 pa = matrix(0, nrow = length(t_quantile), ncol = 20)
 i = i + 1
@@ -329,7 +329,7 @@ result = foreach(k = 1:it, .errorhandling= 'remove', .packages = packages_to_exp
   w_train = 1*( pmin(dataset$Ts, t) <= dataset$censoringtime)/dataset$Gp
   IF = IF_estimate(dataset)
   w_km = 1*( pmin(dataset$Ts, t) <= dataset$censoringtime)/dataset$Gp^2 * y
-  V_weighted <- IF * matrix(w_km, n, n)
+  V_weighted <- IF * matrix(rep(w_km, each = n), n, n)
   var_km <- (V_weighted %*% as.matrix(X))/(n)
   
   # sg-LASSO-MIDAS, cross-validation for AUC
@@ -351,6 +351,10 @@ result = foreach(k = 1:it, .errorhandling= 'remove', .packages = packages_to_exp
     est_MIDAS_LASSO = as.vector( coef(fit_cv_MIDAS_LASSO, s=c('lambda.min') ) )
   }
   
+  #ref_MIDAS_LASSO = ORIG_DS_inf(x=as.matrix(X[,-1]), y = y, family="binomial", lasso_est = est_MIDAS_LASSO, weight = w_train, interest_number = degree + 1, foldid = foldid, variance_km = var_km)
+  #test_stat_MIDAS_LASSO = n * t(ref_MIDAS_LASSO$est[(1+1):(1+1+degree)])%*% solve(ref_MIDAS_LASSO$sigma[(1+1):(1+1+degree), (1+1):(1+1+degree)])%*% ref_MIDAS_LASSO$est[(1+1):(1+1+degree)]
+  #reject_MIDAS_LASSO = 1*(test_stat_MIDAS_LASSO >= qchisq(p = 1 - sig_level, df = degree+1))
+  
   balance = length(data$Ts[data$Ts <= t])/n
   censoring_proportions = length(which(data$status==0))/n
   
@@ -361,8 +365,32 @@ result = foreach(k = 1:it, .errorhandling= 'remove', .packages = packages_to_exp
                   test_stat_MIDAS = test_stat_MIDAS, test_stat_MIDAS_LASSO = test_stat_MIDAS, test_stat_LASSO = test_stat_MIDAS)
   return(results)
 }
+#res_df <- as.data.frame(result)
+
+# Write to Excel
+#write.table(res_df, "results_scenario1.csv")
 
 res = inf_result(result, length(result))
+length(result)
+hist(res$test_stat_MIDAS,
+     breaks = 50,
+     col = "lightblue",
+     main = "Histogram of My Vector",
+     xlab = "Values",
+     freq = FALSE,
+     border = "white")
+curve(dchisq(x, df = degree+1 ), col = "red", lwd = 2, add = TRUE)
+# 
+# hist(res$test_stat_LASSO,
+#      breaks = 50,
+#      col = "lightblue",
+#      main = "Histogram of Wald Test Statistic",
+#      xlab = "Test Statistic Values",
+#      freq = FALSE,        # IMPORTANT: needed to overlay a density curve
+#      border = "white")
+# 
+# curve(dchisq(x, df = jmax ), col = "red", lwd = 2, add = TRUE)
+# legend("topright", legend = "Chi-square Density", col = "red", lwd = 2)
 pa[i, ] = c(res$censoring_proportions, res$balance,
             'p value',
             round(res$reject_LASSO,3), round(res$reject_MIDAS_LASSO,3), round(res$reject_MIDAS,3),

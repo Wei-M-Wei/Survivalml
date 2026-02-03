@@ -5,7 +5,7 @@
 
 
 #============================================================
-# Reproduce simulation, scenario 1 Table 7
+# Reproduce simulation, scenario 1 Table 2
 #============================================================
 
 
@@ -41,6 +41,7 @@ library(timeROC)
 library(glmnet)
 
 # data generating process, scenario 1
+# data generating process, scenario 1
 generateData_AR <-
   function(s, n, numhv, numtrue, degree, jmax, parameters = NA, censor_strength){
     TN = n
@@ -70,7 +71,7 @@ generateData_AR <-
     
     for (tt in 1:(jmax)){
       if (tt == 1){
-        Xdd[,tt,(1:p)] <- MASS::mvrnorm(TN, mu = rep(0, p), corr_matrix) #scenario 1
+        Xdd[,tt,(1:p)] <- MASS::mvrnorm(TN, mu = rep(0, p), corr_matrix) #scenario 2
       }
       else{
         Xdd[,tt,(1:p)] <- rho * Xdd[,tt-1,(1:p)] + MASS::mvrnorm(TN, mu = rep(0, p), corr_matrix*(1 - rho^2))
@@ -337,9 +338,8 @@ result = foreach(k = 1:it, .errorhandling= 'remove', .packages = packages_to_exp
   w_train = 1*( pmin(dataset$Ts, t) <= dataset$censoringtime)/dataset$Gp
   IF = IF_estimate(dataset)
   w_km = 1*( pmin(dataset$Ts, t) <= dataset$censoringtime)/dataset$Gp^2 * y
-  V_weighted <- IF * matrix(w_km, n, n)
+  V_weighted <- IF * matrix(rep(w_km, each = n), n, n)
   var_km <- (V_weighted %*% as.matrix(X))/(n)
-  
   # sg-LASSO-MIDAS, cross-validation for AUC
   fit_cv_MIDAS = alpha_cv_sparsegl(as.matrix(X[,-1]), y, group = gindex, nlambda = 50, weight = w_train, alpha = alpha, foldid = foldid, nfolds = nfold,  pred.loss = 'censor', intercept_zero = intercept_zero, standardize = TRUE, AUC = FALSE, data = dataset, t = t, maxit = 30000)
   est_MIDAS = as.vector( fit_cv_MIDAS$coff)
@@ -358,6 +358,11 @@ result = foreach(k = 1:it, .errorhandling= 'remove', .packages = packages_to_exp
     fit_cv_MIDAS_LASSO = fit_cv_MIDAS$fit_MIDAS_LASSO
     est_MIDAS_LASSO = as.vector( coef(fit_cv_MIDAS_LASSO, s=c('lambda.min') ) )
   }
+  
+  #ref_MIDAS_LASSO = ORIG_DS_inf(x=as.matrix(X[,-1]), y = y, family="binomial", lasso_est = est_MIDAS_LASSO, weight = w_train, interest_number = degree + 1, foldid = foldid, variance_km = var_km)
+  #test_stat_MIDAS_LASSO = n * t(ref_MIDAS_LASSO$est[(1+1):(1+1+degree)])%*% solve(ref_MIDAS_LASSO$sigma[(1+1):(1+1+degree), (1+1):(1+1+degree)])%*% ref_MIDAS_LASSO$est[(1+1):(1+1+degree)]
+  #reject_MIDAS_LASSO = 1*(test_stat_MIDAS_LASSO >= qchisq(p = 1 - sig_level, df = degree+1))
+  
   balance = length(data$Ts[data$Ts <= t])/n
   censoring_proportions = length(which(data$status==0))/n
   
@@ -368,8 +373,32 @@ result = foreach(k = 1:it, .errorhandling= 'remove', .packages = packages_to_exp
                   test_stat_MIDAS = test_stat_MIDAS, test_stat_MIDAS_LASSO = test_stat_MIDAS, test_stat_LASSO = test_stat_MIDAS)
   return(results)
 }
+#res_df <- as.data.frame(result)
+
+# Write to Excel
+#write.table(res_df, "results_scenario1.csv")
 
 res = inf_result(result, length(result))
+length(result)
+hist(res$test_stat_MIDAS,
+     breaks = 50,
+     col = "lightblue",
+     main = "Histogram of My Vector",
+     xlab = "Values",
+     freq = FALSE,
+     border = "white")
+curve(dchisq(x, df = degree+1 ), col = "red", lwd = 2, add = TRUE)
+# 
+# hist(res$test_stat_LASSO,
+#      breaks = 50,
+#      col = "lightblue",
+#      main = "Histogram of Wald Test Statistic",
+#      xlab = "Test Statistic Values",
+#      freq = FALSE,        # IMPORTANT: needed to overlay a density curve
+#      border = "white")
+# 
+# curve(dchisq(x, df = jmax ), col = "red", lwd = 2, add = TRUE)
+# legend("topright", legend = "Chi-square Density", col = "red", lwd = 2)
 pa[i, ] = c(res$censoring_proportions, res$balance,
             'p value',
             round(res$reject_LASSO,3), round(res$reject_MIDAS_LASSO,3), round(res$reject_MIDAS,3),
