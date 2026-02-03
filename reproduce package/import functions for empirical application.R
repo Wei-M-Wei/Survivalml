@@ -509,9 +509,9 @@ ORIG_DS_inf <- function(x, y, family, lasso_est, weight, nfold=5, n_lambda=50,
   # De-biased estimator
   b_hat_nw <- as.vector(lasso_est - theta_glmnet%*%neg_dloglik_glmnet)
 
-  # Compute score contribution for each observation: sigma_i = X_i * (-weight*y + mu) + variance_km
+  # Compute score contribution for each observation: sigma_i = X_i * (-weight*y + mu) - variance_km
   # Shape: N x (pp+1)
-  sigma <- as.matrix(X) * matrix((-weight * y + mu), nrow = nrow(X), ncol = ncol(X)) + variance_km
+  sigma <- as.matrix(X) * matrix((-weight * y + mu), nrow = nrow(X), ncol = ncol(X)) - variance_km
 
   # Compute covariance matrix: (1/N) * sum_i(sigma_i * sigma_i^T)
   # Using t(sigma) %*% sigma / nn to efficiently compute the outer product sum
@@ -535,4 +535,5 @@ ORIG_DS_inf <- function(x, y, family, lasso_est, weight, nfold=5, n_lambda=50,
 
 
 export_env <- ls(globalenv())
+
 
