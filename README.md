@@ -111,7 +111,7 @@ All replication files are available in the repository root directory (`'reproduc
 To reproduce the figures and tables in the paper, run the following scripts:
 
 - **Figure 2 and Table 2 (Variance ratio and correlation heatmap)**  
-  Run: `Figure 2 and Table 2 (variance ratio and correlation heatmap).r`
+  Run: `Figure 2 and Table 2 (variance ratio and correlation heatmap)`
 
 - **Table 4 (Prediction simulations)**  
   Run: `Simulation scenario 1` through `Simulation scenario 5`
@@ -134,9 +134,12 @@ To reproduce the figures and tables in the paper, run the following scripts:
 - **Tables S2–S6**  
   Generated as byproducts of `Simulation scenario 1` through `Simulation scenario 5`
 
-- **Figures S1–S5**  
+- **Figures S1–S3**  
   Generated as byproducts of the empirical application
 
+- **Figures S4–S5**  
+  Run: `inference in empirical application s = 6` and `inference in empirical application s = 10`
+  
 - **Tables S7 and S8**  
   Run files beginning with `application 2 ...`
 
