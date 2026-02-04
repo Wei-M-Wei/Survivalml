@@ -213,7 +213,7 @@ for (t in c( 8, 8.5, 9)) {
 
     # LASSO-UMIDAS
     fit_cv_LASSO = cv.survival_sparsegl(X_train, y_train, group = seq(dim(X_train)[2]), nlambda = 200, weight = w_train, asparse = 1, foldid = foldid, nfolds = 5, pred.loss = 'censor', intercept_zero = intercept_zero, standardize = TRUE, maxit = 30000, AUC = TRUE, data = train_dataset, t = t)
-    # if nan, set a larger number as its likelihood
+    # if nan, set a larger number as its -likelihood
     nan_indices <- sapply(fit_cv_LASSO$cvm, is.nan)
     fit_cv_LASSO$cvm[nan_indices] <- 1000
     cesnor_min_index_LASSO = which(fit_cv_LASSO$cvm== min(fit_cv_LASSO$cvm))[1]
@@ -653,4 +653,5 @@ for (t in c( 8, 8.5, 9)) {
 
 ########################################
 stopCluster()
+
 
