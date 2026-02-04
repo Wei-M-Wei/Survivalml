@@ -267,7 +267,7 @@ intercept_zero = 0
 alpha = c(0, 0.5, 1)# c(0, 0.4, 0.8, 1)
 
 #censoring strength gamma, which can generate approximately 81% censoring
-censor = 0.69 # 3.9
+censor = 0.68 # 3.9
 test_censoring_AR( s = s, n = 1000, censor_strength = censor)
 
 # Generate the prediction horizon t
@@ -307,7 +307,7 @@ v <- qnorm(sig_level/2, lower.tail=F)
   it = it
   result = foreach(k = 1:it, .errorhandling= 'remove', .packages = packages_to_export, .export = vars_to_export) %dopar% {
     n = 1200
-    set.seed(k)
+    set.seed(s*k)
     
     # data prepare
     data = generateData_AR( s = s, n = n, numhv = numhv, numtrue = numtrue, degree = degree, jmax = jmax, parameters = beta_true, censor_strength = censor) # 3, 500, 0.7
