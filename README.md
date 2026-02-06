@@ -131,16 +131,19 @@ To reproduce the figures and tables in the paper, run the following scripts:
 - **Table 11**  
   Run: `significance test`
 
-- **Tables S2–S6**  
+- **Tables S2–S6 (Arxiv version: Tables 13-17)**  
   Generated as byproducts of `Simulation scenario 1` through `Simulation scenario 5`
 
-- **Figures S1–S3**  
+- **Figures S1–S3 (Arxiv version: Figures 4-6)**  
   Generated as byproducts of the empirical application
 
-- **Figures S4–S5**  
+- **Figures S4–S5 (Arxiv version: Figures 7-8)**  
   Run: `inference in empirical application s = 6` and `inference in empirical application s = 10`
+
+  - **Tables S7 and S8 (Arxiv version: Tables 18-19)**  
+  Run files have 'another group structure ...' 
   
-- **Tables S7 and S8**  
+- **Tables S9 and S10 (Arxiv version: Tables 20-21)**  
   Run files beginning with `application 2 ...`
 
 
