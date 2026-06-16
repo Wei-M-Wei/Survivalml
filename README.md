@@ -141,7 +141,7 @@ To reproduce the figures and tables in the paper, run the following scripts:
   Run: `inference in empirical application s = 6` and `inference in empirical application s = 10`
 
 - **Tables S7 and S8 (Arxiv version: Tables 18-19)**  
-  Run files have 'another group structure ...' 
+  Run files with 'another group structure ...' 
   
 - **Tables S9 and S10 (Arxiv version: Tables 20-21)**  
   Run files beginning with `application 2 ...`
