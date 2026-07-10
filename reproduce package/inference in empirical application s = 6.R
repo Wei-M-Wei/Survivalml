@@ -95,7 +95,7 @@ v <- qnorm(sig_level/2, lower.tail=F)
 
 # prediction horizons t = 8, 8.5, 9 years, Estimator(5) in this paper
 rej_vector = c()
-for (t in c( 8.5, 9)) {
+for (t in c( 8，8.5, 9)) {
     dataset = testRandomLogitDataset( data, t = t )
     dataset = KM_estimate(dataset)
     # stratified cross validation, see Section 6.2
