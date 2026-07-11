@@ -199,9 +199,9 @@ names_pic = c( "Current assets turnover ratio"
 ### ----------------------------------------------------------
 ### 3. Your three indicator vectors (length 32 each)
 ### ----------------------------------------------------------
-v1 <- as.numeric(strsplit(rej_vector[1,], ";")[[1]])# c(0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,0,1,0,1,0,1,0,0,0,0,0,0,0,1,0)
-v2 <- as.numeric(strsplit(rej_vector[2,], ";")[[1]])# c(0,0,0,0,1,0,0,0,0,0,0,0,1,1,0,1,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0)
-v3 <- as.numeric(strsplit(rej_vector[3,], ";")[[1]])# c(0,0,0,0,1,0,0,1,0,1,0,0,1,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0)
+v1 <- as.numeric(strsplit(rej_vector[1,], ";")[[1]])# 
+v2 <- as.numeric(strsplit(rej_vector[2,], ";")[[1]])# 
+v3 <- as.numeric(strsplit(rej_vector[3,], ";")[[1]])# 
 
 ### ----------------------------------------------------------
 ### 4. Create matrix for the heatmap
