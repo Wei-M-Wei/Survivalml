@@ -164,7 +164,7 @@ form_folds <- function(n_obs, nfold){
 # time-dependent AUC estimator, from package 'survivalROC'
 ROC_censor_N = function(data, prediction, t, cut.values = NULL ){
   AUC_N = survivalROC(Stime=data$time, status= data$status, marker = prediction, predict.time = t, span = 0.25*nrow(data)^(-1/2))
-  plot(AUC_N$FP, AUC_N$TP, type="l", xlim=c(0,1), ylim=c(0,1), xlab=paste( "FP", "\n", "AUC = ",round(AUC_N$AUC,3)), ylab="TP",main="Method = NNE ")
+  # plot(AUC_N$FP, AUC_N$TP, type="l", xlim=c(0,1), ylim=c(0,1), xlab=paste( "FP", "\n", "AUC = ",round(AUC_N$AUC,3)), ylab="TP",main="Method = NNE ")
   return(AUC_N)
 }
 
