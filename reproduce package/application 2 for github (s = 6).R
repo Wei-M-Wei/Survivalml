@@ -8,7 +8,7 @@ KM_estimate <-
     survival_data <- Surv(data$T_hat, rep(1,nrow(data)) - data$status)
     km_fit <- survfit(survival_data ~ 1)
     data$Gp = summary(km_fit, times = data$m_time_t)$surv
-    set.seed(123) ## s = 6 and seed 1
+    set.seed(123)
     data = data[sample(nrow(data)),]
     return(data)
   }
