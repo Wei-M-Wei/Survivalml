@@ -5,7 +5,7 @@
 
 
 #============================================================
-# Reproduce simulation, scenario 5ï¼ Table 2
+# Reproduce simulation, scenario 5 Table 1
 #============================================================
 
 
