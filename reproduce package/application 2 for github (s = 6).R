@@ -232,7 +232,7 @@ for (t in c(8, 8.5, 9)) {
 
     AUC_LASSO_AUC = round( AUC_LASSO_AUC, 3 ), AUC_MIDAS_AUC = round(AUC_MIDAS_AUC, 3 ), AUC_MIDAS_LASSO_AUC = round(AUC_MIDAS_LASSO_AUC, 3 ),
     AUC_LASSO_AUC_bootstrap = AUC_LASSO_AUC_bootstrap, AUC_MIDAS_AUC_bootstrap = AUC_MIDAS_AUC_bootstrap, AUC_MIDAS_LASSO_AUC_bootstrap = AUC_MIDAS_LASSO_AUC_bootstrap,
-    fit_LASSO_AUC = est_LASSO_AUC, fit_MIDAS_AUC = est_MIDAS_AUC, fit_MIDAS_LASSO_AUC = est_MIDAS_LASSO_AUC, k = k
+    fit_LASSO_AUC = est_LASSO_AUC, fit_MIDAS_AUC = est_MIDAS_AUC, fit_MIDAS_LASSO_AUC = est_MIDAS_LASSO_AUC
   )
 
   ###################################################################################
@@ -489,7 +489,7 @@ for (t in c(8, 8.5, 9)) {
 
     AUC_LASSO_AUC = round( AUC_LASSO_AUC, 3 ), AUC_MIDAS_AUC = round(AUC_MIDAS_AUC, 3 ), AUC_MIDAS_LASSO_AUC = round(AUC_MIDAS_LASSO_AUC, 3 ),
     AUC_LASSO_AUC_bootstrap = AUC_LASSO_AUC_bootstrap, AUC_MIDAS_AUC_bootstrap = AUC_MIDAS_AUC_bootstrap, AUC_MIDAS_LASSO_AUC_bootstrap = AUC_MIDAS_LASSO_AUC_bootstrap,
-    fit_LASSO_AUC = est_LASSO_AUC, fit_MIDAS_AUC = est_MIDAS_AUC, fit_MIDAS_LASSO_AUC = est_MIDAS_LASSO_AUC, k = k
+    fit_LASSO_AUC = est_LASSO_AUC, fit_MIDAS_AUC = est_MIDAS_AUC, fit_MIDAS_LASSO_AUC = est_MIDAS_LASSO_AUC
   )
 
   ###################################################################################
