@@ -86,7 +86,7 @@ w_fin <- gb(degree = degree, alpha = -1/2, a = 0, b = 1, jmax = jmax)/jmax
 
 
 # tuning parameter grid search
-alpha = c(0, 0.1, 0.3, 0.5, 0.7, 0.9, 1)
+alpha = c(0.8, 0.85, 0.9, 0.95, 1)
 
 #bootstrap size
 bootstrap_number = 1000
