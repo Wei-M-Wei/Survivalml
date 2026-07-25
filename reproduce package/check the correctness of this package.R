@@ -1,4 +1,4 @@
-# Step 1: Generate Simulated Data
+# Script: check the correctness of this package.R - Validate the package implementation against a simulated reference model.
 library(glmnet)
 library(Survivalml)
 set.seed(123)  # For reproducibility
@@ -23,10 +23,10 @@ p <- 1 / (1 + exp(-linear_predictor))
 # Simulate the binary outcome y based on the probabilities
 y <- rbinom(n, size = 1, prob = p)
 
-# weight, this case is all observations have equal weights
+# Weights: all observations have equal weights in this case
 wei = c(rep(1, 50), rep(1, 100), rep(1,n-150))
 
-# Step 2: Use optim() to Estimate Parameters
+# Step 2: Use optim() to estimate parameters
 # Negative log-likelihood function for logistic regression
 neg_log_likelihood <- function(beta) {
   linear_predictor <- x %*% beta
@@ -55,14 +55,14 @@ model_glm$coefficients
 fit2 = survival_sparsegl(x[,-1], y, group = seq(2), nlambda = 10, lambda = c(0), weight = wei, asparse = 1, intercept_zero = -1, standardize = TRUE, eps = 1e-8, maxit = 10000000,intercept = TRUE)
 fit2$beta
 
-# compare fit2$beta and beta_optim, we find the difference is very little
+# Compare fit2$beta with beta_optim; the estimates are nearly identical
 fit2$beta - beta_optim[2:3]
 fit2$beta - model_glm$coefficients[2:3]
 
 
-# comparison between glmenet and survivalml, we set alpha = 1, lambda = c(0.01, 0.08)
+# Compare glmnet with survivalml using alpha = 1 and lambda = c(0.01, 0.08)
 
-# Step 3: Use glm() to Estimate Parameters
+# Step 3: Use glm() to estimate parameters
 # Fit the logistic regression model using glm()
 model_glm <- glmnet(x[,-1], y, alpha = 1, family = 'binomial', standardize = TRUE, nlambda = 10, lambda = c(0.01,0.08))
 model_glm$lambda
@@ -76,15 +76,15 @@ print(beta_glm)
 fit2 = survival_sparsegl(x[,-1], y, group = seq(2), nlambda = 10, lambda = c(0.01,0.08), weight = wei, asparse = 1, intercept_zero = -1, standardize = TRUE)
 fit2$beta
 
-# compare fit2$beta and beta_glm, we find the difference is very little
+# Compare fit2$beta with beta_glm; the estimates are nearly identical
 fit2$beta - beta_glm[2:3,]
 
 
-# Another comparison, in the case of weighted logistic regression without penalty
-# weight, this case is weighted logistic regression
+# Additional comparison using weighted logistic regression without a penalty
+# Weights for weighted logistic regression
 wei = c(rep(1, 50), rep(0, 100), rep(1,n-150))
 
-# Step 2: Use optim() to Estimate Parameters
+# Step 2: Use optim() to estimate parameters
 # Negative log-likelihood function for logistic regression
 neg_log_likelihood <- function(beta) {
   linear_predictor <- x %*% beta
@@ -109,5 +109,5 @@ print(beta_optim)
 fit2 = survival_sparsegl(x[,-1], y, group = seq(2), nlambda = 10, lambda = c(0), weight = wei, asparse = 1, intercept_zero = -1, standardize = TRUE)
 fit2$beta
 
-# compare fit2$beta and beta_optim, we find the difference is very little
+# Compare fit2$beta with beta_optim; the estimates are nearly identical
 fit2$beta - beta_optim[2:3]

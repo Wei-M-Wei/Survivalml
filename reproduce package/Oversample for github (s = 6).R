@@ -1,11 +1,11 @@
-#============================================================
+# Script: Oversample for github (s = 6).R
 # Corporate Survival Analysis with Machine Learning Methods
-# Import functions for simulation and empirical application
+# Purpose: Reproduce the oversampling results for s = 6.
 #============================================================
 
 
 #============================================================
-# Reproduce empirical application when s = 6 years and t = 8,8.5,9 years
+# Reproduce the empirical application for s = 6 years and t = 8, 8.5, and 9 years
 #============================================================
 
 
@@ -16,7 +16,7 @@ source('import functions for empirical application.R')
 
 
 
-#load necessary packages
+# Load the required packages
 library(midasml)
 library(dplyr)
 library(RSpectra)
@@ -44,17 +44,17 @@ library(lubridate)
 library(timeROC)
 
 
-#empirical settings
+# Empirical settings
 s = 6
 lag_use_year = 6
 quarter = 4
-lags = lag_use_year * quarter - 1 ############we don't have the information of the last lag.
+lags = lag_use_year * quarter - 1 # Information about the last lag is unavailable.
 jmax <- lags
 
 
 
-# read the data and check basic information
-data_financial = read.csv2("period_final_new6.csv")  # read function from package readxl
+# Read the data and inspect basic information
+data_financial = read.csv2("period_final_new6.csv")  # Read the dataset
 n = dim(data_financial)[1]
 p_fin = dim(data_financial)[2] - 5
 for (col in names(data_financial)[1:p_fin]) {
@@ -63,13 +63,13 @@ for (col in names(data_financial)[1:p_fin]) {
   }
 }
 data = data_financial
-which('true' == is.na(data))# if null values exist
-p = dim(data)[2] - 5 #'start_day, banktuptcy_day, T, censoring_status, C' variables in the last 5 columns
+which('true' == is.na(data))# If NULL values exist
+p = dim(data)[2] - 5 # The variables 'start_day, banktuptcy_day, T, censoring_status, C' are in the last five columns
 n = dim(data)[1]
 
 
 
-# Define survival time, censoring time to calculate KM weights
+# Define the survival and censoring times used to calculate KM weights
 end_observation = '2020-12-31'
 data$start_day = sapply(data$start_day, convert_to_ymd)
 data$censoringtime = as.numeric( as.Date(end_observation) - as.Date(data$start_day) )/365
@@ -85,13 +85,13 @@ degree = 2
 w_fin <- gb(degree = degree, alpha = -1/2, a = 0, b = 1, jmax = jmax)/jmax
 
 
-# tuning parameter grid search
+# Grid search for the tuning parameter
 alpha = c(0, 0.1, 0.3, 0.5, 0.7, 0.9, 1)
 
-#bootstrap size
+# Bootstrap size
 bootstrap_number = 1000
 
-# parallel settings: we need 10 cores
+# Parallel setup using 10 cores
 num_cores <- detectCores()
 cl <- makeCluster(num_cores-2)
 registerDoParallel(cl)
@@ -99,13 +99,13 @@ packages_to_export <- c('timeROC', 'Survivalml', "dplyr", "midasml", "survival",
 ##############################################################
 
 
-# prediction horizons t = 8, 8.5, 9 years, Estimator(5) in this paper
+# Prediction horizons t = 8, 8.5, and 9 years: Estimator (5) in the paper
 for (t in c( 8, 8.5, 9)) {
-  # iteration number
+  # Number of iterations
   it = 10
   result_para = foreach(k = 1:it, .errorhandling= 'remove', .packages = packages_to_export, .export = export_env) %dopar% {
     set.seed(s * k)
-    #allocate training dataset and test dataset, see Section 6.2
+    # Allocate the training and test datasets, see Section 6.2
     dataset_p = data[ which( ( 1*(data$time <= t) * 1*(data$status==1)) == 1), ]
     dataset_n = data[ which( (  1*(data$time <= t) * 1*(data$status==1)) == 0), ]
     indices_p <- sample( nrow( dataset_p ), nrow( dataset_p ) * 0.8 )
@@ -117,13 +117,13 @@ for (t in c( 8, 8.5, 9)) {
     test_dataset_n <- dataset_n[ -indices_n, ]
     test_dataset_in = rbind(test_dataset_p, test_dataset_n)
 
-    #calculate the KM weights for each observation
+    # Calculate the KM weight for each observation
     train_dataset = testRandomLogitDataset( train_dataset_in, t = t )
     train_data = KM_estimate(train_dataset)
     test_dataset = testRandomLogitDataset( test_dataset_in, t = t )
     test_dataset = KM_estimate(test_dataset)
 
-    #oversample
+    # Oversampling
     index_to_be_oversample = which(train_data$status * 1*(train_data$time <= t) == 1)
     positive_proportion = length(index_to_be_oversample)/nrow(train_data)
     train_dataset = train_data
@@ -138,7 +138,7 @@ for (t in c( 8, 8.5, 9)) {
 
     probability = positive_proportion/(length(index_to_be_oversample)/nrow(train_data))
 
-    # stratified cross validation, see Section 6.2
+    # Stratified cross-validation; see Section 6.2
     nfold = 5
     index_fold = which(1*(train_dataset$time <= t) * 1*(train_dataset$status == 1) == 1)
     if (length(index_fold) <5){
@@ -147,7 +147,7 @@ for (t in c( 8, 8.5, 9)) {
       foldid = c( form_folds(nrow(train_dataset[index_fold,]), nfold), form_folds(nrow(train_dataset[-index_fold,]), nfold) )
     }
 
-    #we have 14 variables which are related to T,C and etc. Then delete them
+    # Remove the 14 variables related to T, C, etc.
     X_train = train_dataset[ , 1: (dim(train_dataset)[2]-14) ]
     y_train = 1*(train_dataset$time <= t)
     X_test = as.matrix( test_dataset[ , 1: (dim(train_dataset)[2]-14) ] )
@@ -167,13 +167,13 @@ for (t in c( 8, 8.5, 9)) {
       gindex <- c(gindex, rep(z, times = degree + 1))
     }
 
-    #training dataset which are used to in the SGL-MIDAS
+    # Training dataset used in SGL-MIDAS
     X_in = as.matrix(cbind(rep(1, nrow(X_train)), Xdw))
     fit_cv_MIDAS = alpha_cv_sparsegl( X_in[,-1], y_train, group = gindex, nlambda = 200, weight = w_train, alpha = alpha, nfolds = 5, foldid = NULL, pred.loss = 'censor', intercept_zero = intercept_zero, standardize = TRUE, AUC = TRUE, data = train_dataset, t = t)
     est_MIDAS = fit_cv_MIDAS$coff
     est_MIDAS_AUC = fit_cv_MIDAS$coff_AUC
 
-    #test dataset
+    # Test dataset
     X_t = NULL
     for (z in seq(dim(X_test)[2]/jmax)){
       z_idx <- (1 + (z - 1)*jmax) : (z * jmax)
@@ -181,7 +181,7 @@ for (t in c( 8, 8.5, 9)) {
     }
     X_te = as.matrix(cbind(rep(1, nrow(X_test)),  X_t))
 
-    #time dependent AUC and bootstrap
+    # Time-dependent AUC and bootstrap
     test_predictions_MIDAS = unlist( as.list(plogis(X_te %*% est_MIDAS)) ) / probability
     test_predictions_MIDAS_AUC = unlist( as.list(plogis(X_te %*% est_MIDAS_AUC)) ) / probability
 
@@ -192,7 +192,7 @@ for (t in c( 8, 8.5, 9)) {
     AUC_MIDAS_AUC_bootstrap =  ROC_N_bootstrap(data = test_dataset, prediction = test_predictions_MIDAS_AUC, t = t, sim_number = bootstrap_number )
 
 
-    #LASSO-MIDAS, cross-validation for log-likelihood score
+    # LASSO-MIDAS, cross-validation for log-likelihood score
     if (fit_cv_MIDAS$alpha_out == 1){
       fit_cv_MIDAS_LASSO = fit_cv_MIDAS
       test_predictions_MIDAS_LASSO = test_predictions_MIDAS
@@ -205,7 +205,7 @@ for (t in c( 8, 8.5, 9)) {
     }
     AUC_MIDAS_LASSO = ROC_censor_N(data = test_dataset, prediction = test_predictions_MIDAS_LASSO, t = t )$AUC
 
-    #LASSO-MIDAS, cross-validation for AUC
+    # LASSO-MIDAS, cross-validation for AUC
     if (fit_cv_MIDAS$alpha_AUC == 1){
       fit_cv_MIDAS_LASSO = fit_cv_MIDAS
       test_predictions_MIDAS_LASSO_AUC = test_predictions_MIDAS_AUC
@@ -219,11 +219,11 @@ for (t in c( 8, 8.5, 9)) {
 
     AUC_MIDAS_LASSO_AUC = ROC_censor_N(data = test_dataset, prediction = test_predictions_MIDAS_LASSO_AUC, t = t )$AUC
 
-    # bootstrap for LASSO-MIDAS
+    # Bootstrap for LASSO-MIDAS
     AUC_MIDAS_LASSO_bootstrap =  ROC_N_bootstrap(data = test_dataset, prediction = test_predictions_MIDAS_LASSO, t = t, sim_number = bootstrap_number )
     AUC_MIDAS_LASSO_AUC_bootstrap =  ROC_N_bootstrap(data = test_dataset, prediction = test_predictions_MIDAS_LASSO_AUC, t = t, sim_number = bootstrap_number )
 
-    #LASSO-UMIDAS
+    # LASSO-UMIDAS
     fit_cv_LASSO = cv.survival_sparsegl(X_train, y_train, group = seq(dim(X_train)[2]), nlambda = 200, weight = w_train, asparse = 1, foldid = NULL, nfolds = 5, pred.loss = 'censor', intercept_zero = intercept_zero, standardize = TRUE, maxit = 30000, AUC = TRUE, data = train_dataset, t = t)
     nan_indices <- sapply(fit_cv_LASSO$cvm, is.nan)
     fit_cv_LASSO$cvm[nan_indices] <- 1000
@@ -244,7 +244,7 @@ for (t in c( 8, 8.5, 9)) {
     AUC_LASSO_bootstrap =  ROC_N_bootstrap(data = test_dataset, prediction = test_predictions_LASSO, t = t, sim_number = bootstrap_number )
     AUC_LASSO_AUC_bootstrap =  ROC_N_bootstrap(data = test_dataset, prediction = test_predictions_LASSO_AUC, t = t, sim_number = bootstrap_number )
 
-    #return results
+    # Return the results
     results = list(
       AUC_LASSO = round( AUC_LASSO, 3 ), AUC_MIDAS = round(AUC_MIDAS, 3 ), AUC_MIDAS_LASSO = round(AUC_MIDAS_LASSO, 3 ),
       AUC_LASSO_bootstrap = AUC_LASSO_bootstrap, AUC_MIDAS_bootstrap = AUC_MIDAS_bootstrap, AUC_MIDAS_LASSO_bootstrap = AUC_MIDAS_LASSO_bootstrap,
@@ -257,7 +257,7 @@ for (t in c( 8, 8.5, 9)) {
     return(results)
   }
 
-  # process the results obtained from the parallel
+  # Process the results returned by the parallel workers
 
   result = result_para
 
@@ -282,7 +282,7 @@ for (t in c( 8, 8.5, 9)) {
   AUC_MIDAS_AUC_bootstrap = NULL
   AUC_MIDAS_LASSO_AUC_bootstrap = NULL
 
-  #delete NULL
+  # Remove NULL values
   result = result[!sapply(result, is.null)]
   it = length(result)
   for (i in seq(it)){
@@ -329,7 +329,7 @@ for (t in c( 8, 8.5, 9)) {
   AUC_MIDAS_LASSO_AUC_bootstrap_av = colMeans(AUC_MIDAS_LASSO_AUC_bootstrap)
   ###########################################
 
-  #Final results for s = 6 years and t = 8,8.5,9 years
+  # Final results for s = 6 years and t = 8, 8.5, and 9 years
   res = list(
     AUC_MIDAS = round(colMeans(AUC_MIDAS),3), AUC_MIDAS_VAR = round(apply(AUC_MIDAS, 2, var),3),
     AUC_LASSO = round(colMeans(AUC_LASSO),3), AUC_LASSO_VAR = round(apply(AUC_LASSO, 2, var),3),
@@ -346,7 +346,7 @@ for (t in c( 8, 8.5, 9)) {
     res_fit_av_MIDAS_AUC = res_fit_av_MIDAS_AUC, res_fit_av_LASSO_AUC = res_fit_av_LASSO_AUC, res_fit_av_MIDAS_LASSO_AUC = res_fit_av_MIDAS_LASSO_AUC
   )
 
-  # save the table
+  # Save the table
   table_name1 <- paste0("Oversample_MIDAS_AUC", s, "_AUC_cvm", t, ".csv")
   table_name2 <- paste0("Oversample_MIDAS_AUC", s, "_AUC", t, ".csv")
   table_name3 <- paste0("Oversample_MIDAS_bootstrap", s, "_AUC_cvm", t, ".csv")

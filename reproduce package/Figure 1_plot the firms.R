@@ -1,8 +1,8 @@
 library(lubridate)
 
 
-#"data_before.csv" is the raw dataset
-data_financial = read.csv2("data_before.csv")  # read function from package readxl
+# Script: Figure 1_plot the firms.R - Plot the firm counts reported in Figure 1.
+data_financial = read.csv2("data_before.csv")  # Read the dataset
 for (i in seq_along(data_financial$bankrupt_day)) {
   if ( is.na(data_financial$bankrupt_day[i]) ) {
     data_financial$bankrupt_day[i] = as.Date('2020-12-31')
@@ -40,7 +40,7 @@ counts_matrix <- rbind(year_counts1_aligned, year_counts2_aligned, year_counts3_
 
 # Step 5: Create a grouped bar plot
 barplot(counts_matrix,
-        beside = TRUE,                     # Group the bars beside each other
+        beside = TRUE,                     # Place the bars side by side
         xlab = "Year",
         ylab = "Number of firms",
         names.arg = all_years,              # Use the year names for the X-axis

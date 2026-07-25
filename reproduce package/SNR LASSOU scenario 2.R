@@ -1,11 +1,11 @@
-#============================================================
+# Script: SNR LASSOU scenario 2.R
 # Corporate Survival Analysis with Machine Learning Methods
-# Import functions for simulation and empirical application
+# Purpose: Run the LASSO-U signal-to-noise-ratio simulation for scenario 2.
 #============================================================
 
 
 #============================================================
-# Reproduce simulation
+# Reproduce simulation scenario 2
 #============================================================
 
 
@@ -16,8 +16,8 @@ source('import functions for empirical application.R')
 
 
 
-#load necessary packages
-#library(midasml)
+# Load the required packages
+# library(midasml)
 library(dplyr)
 library(RSpectra)
 library(pROC)
@@ -43,33 +43,33 @@ library(Survivalml)
 library(lubridate)
 library(timeROC)
 
-# data generating process, scenario 2
+# Data-generating process: scenario 2
 generateData_AR <-
   function(s = s, numberOfObservations, numhv, numtrue, degree, jmax, parameters = NA, censor_strength){
     TN = numberOfObservations
-    p <- numhv # Set the dimension of the matrix
-    degree <- degree # degree of the polynomials
-    jmax <- jmax # number of hf obs per lf obs
-    # quarterly covariates
+    p <- numhv # Set the matrix dimensions
+    degree <- degree # Polynomial degree
+    jmax <- jmax # Number of high-frequency observations per low-frequency observation
+    # Quarterly covariates
     Xdd <- array(NA, dim = c(TN, jmax, numhv))
-    # storage for Legendre weighted quarterly
+    # Storage for Legendre-weighted quarterly aggregates
     Xdw <- matrix(NA, nrow = TN, ncol = (degree+1)*numhv)
-    # storage for beta weighted quarterly
+    # Storage for beta-weighted quarterly aggregates
     Xdw_true <- matrix(NA, nrow = TN, ncol = numtrue)
-    # storage for quarterly
+    # Storage for quarterly data
     Xdd_g <- array(NA, dim = c(TN, jmax, numhv))
-    # storage for Legendre weighted quarterly
+    # Storage for Legendre-weighted quarterly aggregates
     Xdw_g <- matrix(NA, nrow = TN, ncol = (degree+1)*numhv)
-    # storage for beta weighted quarterly
+    # Storage for beta-weighted quarterly aggregates
     Xdw_true_g <- matrix(NA, nrow = TN, ncol = numtrue)
     ##########################################################
 
     Xd <- matrix(0, nrow = TN*jmax, ncol = p)
 
-    # level of cross-sectional dependence across all variables
+    # Level of cross-sectional dependence across variables
     phi = 0.1
 
-    # degree of time series dependence among its lag
+    # Degree of time-series dependence across lags
     rho = 0.9
     corr_matrix <- diag(1, p)
 
@@ -81,7 +81,7 @@ generateData_AR <-
 
     for ( t in 1:(jmax)){
       if (t == 1){
-        Xdd[,t,(1:p)] <- MASS::mvrnorm(TN, mu = rep(0, p), corr_matrix) #scenario 2
+        Xdd[,t,(1:p)] <- MASS::mvrnorm(TN, mu = rep(0, p), corr_matrix) # Draw the initial innovations
       }
       else{
         Xdd[,t,(1:p)] <- rho * Xdd[,t-1,(1:p)] + MASS::mvrnorm(TN, mu = rep(0, p), corr_matrix*(1 - rho^2))
@@ -90,13 +90,13 @@ generateData_AR <-
 
     Xdd = abs(Xdd)
 
-    # storage for all lags, which is ued for LASSO-MIDAS
+    # Storage for all lags used in LASSO-MIDAS
     X_orginal = matrix(1, nrow = TN)
     for (i in seq(numhv)){
       X_orginal = cbind(X_orginal, Xdd[,,i])
     }
 
-    # specify the underlying weight function w1 and w2, which represent Beta(1,3) and Beta(2,3) respectively.
+    # Specify the underlying weight functions w1 and w2, representing Beta(1,3) and Beta(2,3), respectively.
     idx <- 1:(degree+1)
     gindex <- NULL
 
@@ -115,8 +115,8 @@ generateData_AR <-
     #
     dataset = cbind(rep(1, numberOfObservations),  Xdw)
 
-    # Inverse logit function
-    logit_inv <- function(p) log( p / (1 - p))  # Inverse logit function
+    # Logit function (probability to log-odds)
+    logit_inv <- function(p) log( p / (1 - p))  # Logit function (probability to log-odds)
     uniform_rand <- runif(numberOfObservations)
 
     # X^T%*%l
@@ -124,7 +124,7 @@ generateData_AR <-
 
     dataset %>%
       as_tibble() %>%
-      mutate( Ts = s + exp( (logit_inv(uniform_rand) - (cbind(rep(1,numberOfObservations), Xdw_true) %*% parameters)) / (div)), # equation (10) in the paper
+      mutate( Ts = s + exp( (logit_inv(uniform_rand) - (cbind(rep(1,numberOfObservations), Xdw_true) %*% parameters)) / (div)), # Equation (10) in the paper
               censoringtime = s + rexp(numberOfObservations, censor_strength),
               time = pmin(Ts, censoringtime),
               status = as.numeric(Ts <= censoringtime),
@@ -132,7 +132,7 @@ generateData_AR <-
   }
 
 
-#check the censoring rate
+# Check the censoring rate
 test_censoring_AR = function(s = s, n, censor_strength){
   res = 0
   for (i in seq(100)){
@@ -163,7 +163,7 @@ compute_ic_margins <- function(X, beta, eps = 1e-8) {
   W <- p_hat * (1 - p_hat)
 
   # Weighted Hessian
-  XW <- sweep(X, 1, W, "*")       # FIXED: multiply each row by corresponding weight
+  XW <- sweep(X, 1, W, "*")       # Multiply each row by its corresponding weight
   Sigma <- t(X) %*% XW / N
 
   # Partition Sigma
@@ -192,16 +192,16 @@ compute_ic_margins <- function(X, beta, eps = 1e-8) {
 }
 
 compute_logit_snr <- function(X, beta_true) {
-  # linear predictor
+  # Linear predictor
   eta <- as.numeric(X %*% beta_true)
 
-  # predicted probabilities
+  # Predicted probabilities
   # p_hat <- 1 / (1 + exp(-eta))
 
-  # signal variance
+  # Signal variance
   signal_var <- var(eta)
 
-  # noise variance: mean of Bernoulli variance
+  # Noise variance: mean Bernoulli variance
   noise_var <-  pi^2 / 3 # mean(p_hat * (1 - p_hat))
 
   # SNR
@@ -233,9 +233,9 @@ calculate_theoretical_logit_lasso_margin <- function(X, b_true) {
     return(1.0)
   }
 
-  # 3. CALCULATE THE FULL FISHER INFORMATION MATRIX (I_full) 🚀
+  # 3. Calculate the full Fisher information matrix (I_full)
 
-  # 3.1. Calculate True Linear Predictor (eta_0) and Probabilities (pi_0)
+  # 3.1. Calculate the true linear predictor (eta_0) and probabilities (pi_0)
   eta_0 <- X %*% b_true
   pi_0 <- as.vector(1 / (1 + exp(-eta_0)))
 
@@ -246,18 +246,18 @@ calculate_theoretical_logit_lasso_margin <- function(X, b_true) {
   # This is the line that defines I_full!
   I_full <- t(X) %*% W_0 %*% X / n
 
-  # 4. Partition the Fisher Information Matrix (Remove Intercept)
+  # 4. Partition the Fisher information matrix (remove the intercept)
 
-  # Drop the first row and first column (index 1) which belong to the intercept.
+  # Drop the first row and column (index 1), which correspond to the intercept.
   I_covariates <- I_full[covariate_indices, covariate_indices]
 
   # 5. Partition I_covariates into I_11 and I_21
   I_11 <- I_covariates[active_set_indices, active_set_indices]
   I_21 <- I_covariates[inactive_set_indices, active_set_indices]
 
-  # 6. Calculate the Maximum Correlation Bound using Pseudo-Inverse (ginv)
+  # 6. Calculate the maximum-correlation bound using the pseudoinverse (ginv)
 
-  # Use ginv() which handles singular matrices
+  # Use ginv(), which handles singular matrices
   I_11_inverse <- ginv(I_11)
 
   # Get the sign vector of the active covariate coefficients
@@ -275,47 +275,47 @@ calculate_theoretical_logit_lasso_margin <- function(X, b_true) {
   return(margin)
 }
 
-# Example usage (ensure your X_orginal and b_true are defined):
+# Example usage (ensure that X_orginal and b_true are defined):
 # margin_value <- calculate_theoretical_logit_lasso_margin_robust(X_orginal, b_true)
-# initial setting
+# Initial settings
 s = 6
 
-#quratker/year frequency
+# Quarterly frequency
 high_frequency = 4
 
-# degree of the polynomials
+# Polynomial degree
 degree = 2
 jmax <- s * high_frequency
 
-# Number of covariates K
+# Number of covariates, K
 numhv = 50
 
 # Number of relevant covariates
 numtrue = 2
 
-# Gegenbauer polynomials W, L = 3 <=> degree is set to 2
+# Gegenbauer polynomials W: L = 3 implies degree = 2
 w <- gb(degree = degree, alpha = -1/2, a = 0, b = 1, jmax = jmax)/jmax
 
 # Underlying weight function
 w1 <- dbeta((1:jmax)/(jmax), shape1 = 1, shape2 = 3)
 w2 <- dbeta((1:jmax)/(jmax), shape1 = 2, shape2 = 3)
 
-#true parameters including the intercept, see Example 5.1 in the paper
+# True parameters, including the intercept; see Example 5.1 in the paper
 beta_true = c(1, 1, -1)
 
-#group structure
+# Group structure
 gindex = NULL
 for (z in seq(numhv)){
   gindex <- c(gindex, rep(z, times = degree + 1))
 }
 
-# starting point of the gradient decent algorithm
+# Starting point for the gradient descent algorithm
 intercept_zero = 0
 
-# cross-validation
+# Cross-validation
 alpha = c(0, 0.1, 0.3, 0.5, 0.7, 0.9, 1)
 
-#censoring strength gamma, which can generate approximately 81% censoring
+# Censoring-strength parameter gamma, which yields approximately 81% censoring
 censor = 1.7
 test_censoring_AR( s = s, n = 1000, censor_strength = censor)
 
@@ -338,16 +338,16 @@ t_quantile = t_quantile/100 # c(quantile(data$Ts[ind], probs = 0.1), quantile(da
 censor_strength = c(censor)
 t = t_quantile[1]
 
-#call for parallel
+# Set up parallel processing
 num_cores <- detectCores()
 cl <- makeCluster(num_cores-7)
 registerDoParallel(cl)
 packages_to_export <- c('MASS' ,'timeROC', 'mvtnorm', 'Survivalml', "dplyr", "survival", "MLmetrics", "pROC", "PRROC", 'survivalROC', 'dotCall64', 'glmnet', 'rlang', 'pracma')
 
-# repetitions of the simulation
+# Simulation repetitions
 it = 100
 
-#scenario 2 N = 800
+# Scenario 2: N = 800
 for (censor in censor_strength){
   n = 800
   i=0
@@ -359,7 +359,7 @@ for (censor in censor_strength){
     result = foreach(k = 1:it, .errorhandling= 'remove', .packages = packages_to_export, .export = export_env) %dopar% {
       set.seed(k)
 
-      # data prepare
+      # Data preparation
       data = generateData_AR( s = s, n = n, numhv = numhv, numtrue = numtrue, degree = degree, jmax = jmax, parameters = beta_true, censor_strength = censor) # 3, 500, 0.7
       dataset_p = data[ which( (1*( data$time <= t ))*(1*( data$status == 1 )) == 1), ]
       dataset_n = data[ which( (1*( data$time <= t ))*(1*( data$status == 1 )) == 0), ]
@@ -376,7 +376,7 @@ for (censor in censor_strength){
       test_dataset = testRandomLogitDataset( test_dataset, t = t )
       test_dataset = KM_estimate(test_dataset)
 
-      #5-fold cross validation
+      #5-fold cross-validation
       nfold = 5
       index_fold = which(1*(train_dataset$time <= t) * 1*(train_dataset$status == 1) == 1)
       if (length(index_fold) < 5){
@@ -385,11 +385,11 @@ for (censor in censor_strength){
         foldid = c( form_folds(nrow(train_dataset[index_fold,]), nfold), form_folds(nrow(train_dataset[-index_fold,]), nfold) )
       }
 
-      #dataset for LASSO-UMIDAS
+      # Dataset for LASSO-UMIDAS
       X_orginal_train = train_dataset$X_orginal[ , 1:(1+jmax*numhv) ]
       X_orginal_test = test_dataset$X_orginal[ , 1:(1+jmax*numhv) ]
 
-      #dataset for sg-LASSO-MIDAS
+      # Dataset for sg-LASSO-MIDAS
       X_train = train_dataset[ , 1:(numhv*(degree+1)+1) ]
       y_train = 1*(train_dataset$time <= t)
       X_test = as.matrix( test_dataset[, 1:(numhv*(degree+1)+1)] )
@@ -398,7 +398,7 @@ for (censor in censor_strength){
       X = rbind(X_train, X_test)
       X_orginal = rbind(X_orginal_train, X_orginal_test)
 
-      # oracle AUC
+      # Oracle AUC
       b_truec = c(beta_true[1] + log((t - s)), beta_true[-1]  +  log((t - s)))
       b_truec = c(b_truec[1:(1)], w1*b_truec[1+1], w2*b_truec[1+1+1])
       b_true = c(b_truec, rep(0,(numhv-2)*jmax))

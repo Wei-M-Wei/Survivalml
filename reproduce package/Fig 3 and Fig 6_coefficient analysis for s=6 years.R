@@ -4,7 +4,7 @@ s = 6
 quarter = 4
 degree = 2
 
-# import the sub dataset
+# Script: Fig 3 and Fig 6_coefficient analysis for s=6 years.R - Analyze coefficients for the s = 6 specification used in Figures 3 and 6.
 data = read.csv2('period_final_new6.csv')
 p  = dim(data)[2] - 5
 name_v = c()
@@ -12,7 +12,7 @@ for (j in seq(1, p, s*quarter)){
   name_v = c(name_v, rep(names(data)[j],3))
 }
 
-# files which contain the estimated cof
+# Files containing the estimated coefficients
 t = 8
 cof = read.csv2('MIDAS6_cof_AUC8.csv')
 cof
@@ -59,7 +59,7 @@ names(cof_e) = name_v
 cof_analysis[which(cof_e[seq(1,length(cof_e),degree+1)] !=0 ),3] = as.numeric(1)
 
 
-# extract variable names
+# Extract variable names
 names_pic <- sub("\\.\\.\\..*", "", names(cof_e[seq(1,length(cof_e),degree+1)]))
 names_pic <- gsub("\\.", " ", names_pic)
 
@@ -109,9 +109,9 @@ colnames(cof_analysis) <- col_labels
 melted_data <- melt(cof_analysis)
 colnames(melted_data) <- c("Variables", "Time", "Value")
 
-# Create heatmap with ggplot2, Fig 3
+# Create the Figure 3 heatmap with ggplot2
 ggplot(melted_data, aes(Time, Variables, fill = factor(Value))) +  # Use factor for discrete values
-  geom_tile() +  # Add border to tiles
+  geom_tile() +  # Draw the heatmap tiles
   scale_fill_manual(values = c("0" = "white", "1" = "red")) +  # Custom colors
   labs(
     x = "Prediction horizon",
@@ -120,7 +120,7 @@ ggplot(melted_data, aes(Time, Variables, fill = factor(Value))) +  # Use factor 
   theme(legend.position = "none")
 
 
-# selected types
+# Selected types
 names_pic = c('Operation ability related', 'Debt related', 'Profit related', 'Potential related',
               'Z-score related', 'Captial related', 'Stock related', 'Cash related')
 
@@ -142,9 +142,9 @@ melted_data <- melt(cof_final)
 colnames(melted_data) <- c("Variables", "Time", "Value")
 melted_data$Value = as.numeric(melted_data$Value)
 
-# Create heatmap with ggplot2, Fig 5
-ggplot(melted_data, aes(Time, Variables, fill = Value)) +  # Use factor for discrete values
-  geom_tile() +  # Add border to tiles
+# Create the Figure 5 heatmap with ggplot2
+ggplot(melted_data, aes(Time, Variables, fill = Value)) +  # Use the numeric values directly
+  geom_tile() +  # Draw the heatmap tiles
   scale_fill_gradient(low = "white", high = "red", limits = c(0, 1)) +  # Custom colors
   labs(
     x = "Prediction horizon",

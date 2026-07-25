@@ -1,11 +1,11 @@
-#============================================================
+# Script: simulation scenario 1 revised.R
 # Corporate Survival Analysis with Machine Learning Methods
-# Import functions for simulation and empirical application
+# Purpose: Run prediction simulation scenario 1.
 #============================================================
 
 
 #============================================================
-# Reproduce simulation
+# Reproduce simulation scenario 1
 #============================================================
 
 
@@ -17,7 +17,7 @@ source('import functions for empirical application.R')
 
 
 # Load required packages
-#library(midasml)
+# library(midasml)
 library(dplyr)
 library(RSpectra)
 library(pROC)
@@ -43,13 +43,13 @@ library(Survivalml)
 library(lubridate)
 library(timeROC)
 
-# Data-generating process (scenario 1)
+# Data-generating process (Scenario 1)
 generateData_AR <-
   function(s, n, numhv, numtrue, degree, jmax, parameters = NA, censor_strength){
     TN = n
-    p <- numhv # Set the dimension of the matrix
-    degree <- degree # degree of the polynomials
-    jmax <- jmax # number of hf obs per lf obs
+    p <- numhv # Set the matrix dimensions
+    degree <- degree # Polynomial degree
+    jmax <- jmax # Number of high-frequency observations per low-frequency observation
     # Quarterly covariates
     Xdd <- array(NA, dim = c(TN, jmax, numhv))
     # Storage for Legendre-weighted quarterly aggregates
@@ -66,7 +66,7 @@ generateData_AR <-
     
     Xd <- matrix(0, nrow = TN*jmax, ncol = p)
     
-    # level of cross-sectional dependence across all variables
+    # Level of cross-sectional dependence across variables
     phi = 0.1
     
     # Degree of time-series dependence across lags
@@ -81,7 +81,7 @@ generateData_AR <-
     
     for ( t in 1:(jmax)){
       if (t == 1){
-        Xdd[,t,(1:p)] <- MASS::mvrnorm(TN, mu = rep(0, p), corr_matrix) #scenario 2
+        Xdd[,t,(1:p)] <- MASS::mvrnorm(TN, mu = rep(0, p), corr_matrix) # Draw the initial innovations
       }
       else{
         Xdd[,t,(1:p)] <- rho * Xdd[,t-1,(1:p)] + MASS::mvrnorm(TN, mu = rep(0, p), corr_matrix*(1 - rho^2))
@@ -115,8 +115,8 @@ generateData_AR <-
     #
     dataset = cbind(rep(1, n),  Xdw)
     
-    # Inverse logit function
-    logit_inv <- function(p) log( p / (1 - p))  # inverse-logit (log-odds to logit)
+    # Logit function (probability to log-odds)
+    logit_inv <- function(p) log( p / (1 - p))  # Logit transformation (probability to log-odds)
     uniform_rand <- runif(n)
     
     # X^T%*%l
@@ -124,7 +124,7 @@ generateData_AR <-
     
     dataset %>%
       as_tibble() %>%
-      mutate( Ts = s + exp( (logit_inv(uniform_rand) - (cbind(rep(1,n), Xdw_true) %*% parameters)) / (div)), # equation (10) in the paper
+      mutate( Ts = s + exp( (logit_inv(uniform_rand) - (cbind(rep(1,n), Xdw_true) %*% parameters)) / (div)), # Equation (10) in the paper
               censoringtime = s + rexp(n, censor_strength),
               time = pmin(Ts, censoringtime),
               status = as.numeric(Ts <= censoringtime),
@@ -149,11 +149,11 @@ s = 6
 # Quarterly frequency (quarters per year)
 high_frequency = 4
 
-# Degree of the polynomials
+# Polynomial degree
 degree = 2
 jmax <- s * high_frequency
 
-# Number of covariates K
+# Number of covariates, K
 numhv = 50
 
 # Number of relevant covariates
@@ -178,7 +178,7 @@ for (z in seq(numhv)){
 # Starting point for the gradient descent algorithm (intercept)
 intercept_zero = 0
 
-# cross-validation
+# Cross-validation
 alpha = c(0, 0.1, 0.3, 0.5, 0.7, 0.9, 1)
 
 # Censoring strength gamma (approx. 81% censoring at chosen value)
@@ -210,7 +210,7 @@ packages_to_export <- c('timeROC', 'mvtnorm', 'Survivalml', "dplyr", "survival",
 # Number of simulation repetitions
 it = 100
 
-#scenario 1 N = 800
+# Scenario 1: N = 800
 for (censor in censor_strength){
   n = 800
   i=0
@@ -332,7 +332,7 @@ for (censor in censor_strength){
   write.table(pa, table_name, sep = ";", row.names = FALSE, quote = FALSE)
 }
 
-#scenario 1 N = 1200
+# Scenario 1 N = 1200
 for (censor in censor_strength){
   n = 1200
   i=0
@@ -344,7 +344,7 @@ for (censor in censor_strength){
     result = foreach(k = 1:it, .errorhandling= 'remove', .packages = packages_to_export, .export = export_env) %dopar% {
       set.seed(s*k)
       
-      # data prepare
+      # Data preparation
       data = generateData_AR( s = s, n = n, numhv = numhv, numtrue = numtrue, degree = degree, jmax = jmax, parameters = beta_true, censor_strength = censor) # 3, 500, 0.7
       dataset_p = data[ which( (1*( data$time <= t ))*(1*( data$status == 1 )) == 1), ]
       dataset_n = data[ which( (1*( data$time <= t ))*(1*( data$status == 1 )) == 0), ]
@@ -361,7 +361,7 @@ for (censor in censor_strength){
       test_dataset = testRandomLogitDataset( test_dataset, t = t )
       test_dataset = KM_estimate(test_dataset)
       
-      #5-fold cross validation
+      #5-fold cross-validation
       nfold = 5
       index_fold = which(1*(train_dataset$time <= t) * 1*(train_dataset$status == 1) == 1)
       if (length(index_fold) < 5){
@@ -370,11 +370,11 @@ for (censor in censor_strength){
         foldid = c( form_folds(nrow(train_dataset[index_fold,]), nfold), form_folds(nrow(train_dataset[-index_fold,]), nfold) )
       }
       
-      #dataset for LASSO-UMIDAS
+      # Dataset for LASSO-UMIDAS
       X_orginal_train = train_dataset$X_orginal[ , 1:(1+jmax*numhv) ]
       X_orginal_test = test_dataset$X_orginal[ , 1:(1+jmax*numhv) ]
       
-      #dataset for sg-LASSO-MIDAS
+      # Dataset for sg-LASSO-MIDAS
       X_train = train_dataset[ , 1:(numhv*(degree+1)+1) ]
       y_train = 1*(train_dataset$time <= t)
       X_test = as.matrix( test_dataset[, 1:(numhv*(degree+1)+1)] )
@@ -388,7 +388,7 @@ for (censor in censor_strength){
       test_predictions_MIDAS = unlist( as.list(plogis(cbind(1, X_test[,-1]) %*% fit_cv_MIDAS$coff_AUC)))
       est_MIDAS = fit_cv_MIDAS$coff_AUC
       
-      #LASSO-MIDAS
+      # LASSO-MIDAS
       if (fit_cv_MIDAS$alpha_out == 1){
         fit_cv_MIDAS_LASSO = fit_cv_MIDAS
         test_predictions_MIDAS_LASSO = test_predictions_MIDAS
@@ -400,20 +400,20 @@ for (censor in censor_strength){
         test_predictions_MIDAS_LASSO = unlist( as.list(plogis(cbind(1, X_test[,-1]) %*% est_MIDAS_LASSO)))
       }
       
-      #LASSO-UMIDAS
+      # LASSO-UMIDAS
       fit_cv_LASSO = cv.survival_sparsegl(as.matrix(X_orginal_train[,-1]), y_train, group = seq(jmax*numhv), nlambda = 50, weight = w_train, asparse = 1, foldid = foldid, nfolds = nfold, pred.loss = 'censor', intercept_zero = intercept_zero, standardize = TRUE, AUC = TRUE, data = train_dataset, t = t, maxit = 30000)
       cesnor_min_index_LASSO = which(fit_cv_LASSO$AUC_censor == max(fit_cv_LASSO$AUC_censor))[1]
       est_LASSO = unlist(c(fit_cv_LASSO$survival_sparsegl$b0[,cesnor_min_index_LASSO], fit_cv_LASSO$survival_sparsegl$beta[,cesnor_min_index_LASSO]))
       test_predictions_LASSO = unlist( as.list(plogis(cbind(1, X_orginal_test[,-1]) %*% est_LASSO)))
       
-      # oracle AUC
+      # Oracle AUC
       b_truec = c(beta_true[1] + log((t - s)), beta_true[-1]  +  log((t - s)))
       b_truec = c(b_truec[1:(1)], w1*b_truec[1+1], w2*b_truec[1+1+1])
       predictions_true = unlist(as.list(plogis(X_orginal_test[, 1: (1+jmax*numtrue)] %*% b_truec)))
       AUC_true_N_t = survivalROC(Stime=test_dataset$time, status= test_dataset$status, marker = predictions_true, predict.time = t, span = 0.25*nrow(data)^(-1/2))
       AUC_true_N = AUC_true_N_t$AUC
       
-      # prediction for 3 approaches
+      # Predictions from the three approaches
       AUC_MIDAS_N = ROC_censor_N(data = test_dataset, prediction = test_predictions_MIDAS, t = t )$AUC
       AUC_MIDAS_LASSO_N = ROC_censor_N(data = test_dataset, prediction = test_predictions_MIDAS_LASSO, t = t )$AUC
       AUC_LASSO_N = ROC_censor_N(data = test_dataset, prediction = test_predictions_LASSO, t = t )$AUC

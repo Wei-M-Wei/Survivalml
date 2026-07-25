@@ -1,6 +1,6 @@
-#load necessary packages
+# Script: Figure 2 and Table 2 (variance ratio and correlation heatmap).R - Produce the variance-ratio results and correlation heatmap for Figure 2 and Table 2.
 library(dplyr)
-#library(RSpectra)
+# library(RSpectra)
 library(pROC)
 library(openxlsx)
 library(ggplot2)
@@ -29,35 +29,35 @@ cor2 = 0
 var1 = 0
 var2 = 0
 
-# scenario 1
-# data generating process, scenario 1
+# Scenario 1
+# Data-generating process: scenario 1
 generateData_AR <-
   function(s , numberOfObservations, numhv, numtrue, degree, jmax, parameters = NA, censor_strength){
     TN = numberOfObservations
-    p <- numhv # Set the dimension of the matrix
-    degree <- degree # degree of the polynomials
-    jmax <- jmax # number of hf obs per lf obs
-    # quarterly covariates
+    p <- numhv # Set the matrix dimensions
+    degree <- degree # Polynomial degree
+    jmax <- jmax # Number of high-frequency observations per low-frequency observation
+    # Quarterly covariates
     Xdd <- array(NA, dim = c(TN, jmax, numhv))
-    # storage for Legendre weighted quarterly
+    # Storage for Legendre-weighted quarterly aggregates
     Xdw <- matrix(NA, nrow = TN, ncol = (degree+1)*numhv)
-    # storage for beta weighted quarterly
+    # Storage for beta-weighted quarterly aggregates
     Xdw_true <- matrix(NA, nrow = TN, ncol = numtrue)
-    # storage for quarterly
+    # Storage for quarterly data
     Xdd_g <- array(NA, dim = c(TN, jmax, numhv))
-    # storage for Legendre weighted quarterly
+    # Storage for Legendre-weighted quarterly aggregates
     Xdw_g <- matrix(NA, nrow = TN, ncol = (degree+1)*numhv)
-    # storage for beta weighted quarterly
+    # Storage for beta-weighted quarterly aggregates
     Xdw_true_g <- matrix(NA, nrow = TN, ncol = numtrue)
     ##########################################################
 
     Xd <- matrix(0, nrow = TN*jmax, ncol = p)
 
-    # level of cross-sectional dependence across all variables
+    # Level of cross-sectional dependence across variables
     phi = 0.1
 
     rho = 0.1
-    # degree of time series dependence among its lag
+    # Degree of time-series dependence across lags
     corr_matrix <- diag(1, p)
 
     for (v in 1:(p)) {
@@ -68,23 +68,23 @@ generateData_AR <-
 
     for ( t in 1:(jmax)){
       if (t == 1){
-        Xdd[,t,(1:p)] <- MASS::mvrnorm(TN, mu = rep(0, p), corr_matrix) #scenario 1
+        Xdd[,t,(1:p)] <- MASS::mvrnorm(TN, mu = rep(0, p), corr_matrix) # Scenario 1
       }
       else{
         Xdd[,t,(1:p)] <- rho * Xdd[,t-1,(1:p)] + MASS::mvrnorm(TN, mu = rep(0, p), corr_matrix*(1 - rho^2))
       }
     }
 
-    # transform to its absolute value, as described in the paper
+    # Take the absolute value, as described in the paper
     Xdd = abs(Xdd)
 
-    # storage for all lags, which is ued for LASSO-MIDAS
+    # Storage for all lags used in LASSO-MIDAS
     X_orginal = matrix(1, nrow = TN)
     for (i in seq(numhv)){
       X_orginal = cbind(X_orginal, Xdd[,,i])
     }
 
-    # specify the underlying weight function w1 and w2, which represent Beta(1,3) and Beta(2,3) respectively.
+    # Specify the underlying weight functions w1 and w2, representing Beta(1,3) and Beta(2,3), respectively.
     idx <- 1:(degree+1)
     gindex <- NULL
 
@@ -103,8 +103,8 @@ generateData_AR <-
     #
     dataset = cbind(rep(1, numberOfObservations),  Xdw)
 
-    # Inverse logit function
-    logit_inv <- function(p) log( p / (1 - p))  # Inverse logit function
+    # Logit function (probability to log-odds)
+    logit_inv <- function(p) log( p / (1 - p))  # Logit function (probability to log-odds)
 
     uniform_rand <- runif(numberOfObservations)
 
@@ -113,14 +113,14 @@ generateData_AR <-
 
     dataset %>%
       as_tibble() %>%
-      mutate( Ts = s + exp( (logit_inv(uniform_rand) - (cbind(rep(1,numberOfObservations), Xdw_true) %*% parameters)) / (div)), # equation (10) in the paper
+      mutate( Ts = s + exp( (logit_inv(uniform_rand) - (cbind(rep(1,numberOfObservations), Xdw_true) %*% parameters)) / (div)), # Equation (10) in the paper
               censoringtime = s + rexp(numberOfObservations, censor_strength),
               time = pmin(Ts, censoringtime),
               status = as.numeric(Ts <= censoringtime),
               X_orginal = X_orginal)
   }
 
-# calculate the censoring rate of a simulation dataset
+# Calculate the censoring rate for a simulated dataset
 test_censoring_AR = function(s , n, censor_strength){
   res = 0
   for (i in seq(100)){
@@ -131,42 +131,42 @@ test_censoring_AR = function(s , n, censor_strength){
 }
 s = 6
 
-#quarter/year frequency
+# Quarterly frequency
 high_frequency = 4
 
-# degree of the polynomials
+# Polynomial degree
 degree = 2
 jmax <- s * high_frequency
 
-# Number of covariates K
+# Number of covariates, K
 numhv = 50
 
 # Number of relevant covariates
 numtrue = 2
 
-# Gegenbauer polynomials W, L = 3 <=> degree is set to 2
+# Gegenbauer polynomials W: L = 3 implies degree = 2
 w <- gb(degree = degree, alpha = -1/2, a = 0, b = 1, jmax = jmax)/jmax
 
 # Underlying weight function
 w1 <- dbeta((1:jmax)/(jmax), shape1 = 1, shape2 = 3)
 w2 <- dbeta((1:jmax)/(jmax), shape1 = 2, shape2 = 3)
 
-#true parameters including the intercept, see Example 5.1 in the paper
+# True parameters, including the intercept; see Example 5.1 in the paper
 beta_true = c(1, 1, -1)
 
-#group structure
+# Group structure
 gindex = NULL
 for (z in seq(numhv)){
   gindex <- c(gindex, rep(z, times = degree + 1))
 }
 
-# starting point of the gradient decent algorithm
+# Starting point for the gradient descent algorithm
 intercept_zero = 0
 
-# cross-validation
+# Cross-validation
 alpha = c(1)
 
-#censoring strength gamma, which can generate approximately 81% censoring
+# Censoring-strength parameter gamma, which yields approximately 81% censoring
 censor = 1.68 # 3.9
 test_censoring_AR( s = s, n = 1200, censor_strength = censor)
 
@@ -174,7 +174,7 @@ for (j in seq(100)) {
   n = 800
   set.seed(j)
   print(j)
-  # data prepare
+  # Data preparation
   data = generateData_AR( s = s, numberOfObservations = n, numhv = numhv, numtrue = numtrue, degree = degree, jmax = jmax, parameters = beta_true, censor_strength = censor) # 3, 500, 0.7
   dataset_p = data[ which( (1*( data$time <= t ))*(1*( data$status == 1 )) == 1), ]
   dataset_n = data[ which( (1*( data$time <= t ))*(1*( data$status == 1 )) == 0), ]
@@ -182,14 +182,14 @@ for (j in seq(100)) {
   dataset = testRandomLogitDataset(dataset, t = t )
   dataset = KM_estimate(dataset)
 
-  #5-fold cross validation
+  #5-fold cross-validation
   nfold = 5
   index_fold = which(1*(dataset$time <= t) * 1*(dataset$status == 1) == 1)
-  #dataset for LASSO-UMIDAS
+  # Dataset for LASSO-UMIDAS
   X_orginal = dataset$X_orginal[ , 1:(1+jmax*numhv) ]
   cor1 = cor1 + cor(X_orginal[,(jmax + 2):(2*jmax+1)])
   var1 = var1 + var(X_orginal[,2])
-  #dataset for sg-LASSO-MIDAS
+  # Dataset for sg-LASSO-MIDAS
   X = dataset[ , 1:(numhv*(degree+1)+1) ]
   cor2 = cor2 + cor(X[,2:4])
   var2 = var2 + apply(X[,2:4],2,var)
@@ -200,36 +200,36 @@ c2_1 = cor2/100
 
 
 
-########scenario 2
+# Scenario 2
 
-# data generating process, scenario 2
+# Data-generating process: scenario 2
 generateData_AR <-
   function(s = s, numberOfObservations, numhv, numtrue, degree, jmax, parameters = NA, censor_strength){
     TN = numberOfObservations
-    p <- numhv # Set the dimension of the matrix
-    degree <- degree # degree of the polynomials
-    jmax <- jmax # number of hf obs per lf obs
-    # quarterly covariates
+    p <- numhv # Set the matrix dimensions
+    degree <- degree # Polynomial degree
+    jmax <- jmax # Number of high-frequency observations per low-frequency observation
+    # Quarterly covariates
     Xdd <- array(NA, dim = c(TN, jmax, numhv))
-    # storage for Legendre weighted quarterly
+    # Storage for Legendre-weighted quarterly aggregates
     Xdw <- matrix(NA, nrow = TN, ncol = (degree+1)*numhv)
-    # storage for beta weighted quarterly
+    # Storage for beta-weighted quarterly aggregates
     Xdw_true <- matrix(NA, nrow = TN, ncol = numtrue)
-    # storage for quarterly
+    # Storage for quarterly data
     Xdd_g <- array(NA, dim = c(TN, jmax, numhv))
-    # storage for Legendre weighted quarterly
+    # Storage for Legendre-weighted quarterly aggregates
     Xdw_g <- matrix(NA, nrow = TN, ncol = (degree+1)*numhv)
-    # storage for beta weighted quarterly
+    # Storage for beta-weighted quarterly aggregates
     Xdw_true_g <- matrix(NA, nrow = TN, ncol = numtrue)
     ##########################################################
 
     Xd <- matrix(0, nrow = TN*jmax, ncol = p)
 
-    # level of cross-sectional dependence across all variables
+    # Level of cross-sectional dependence across variables
     phi = 0.1
 
     rho = 0.9
-    # degree of time series dependence among its lag
+    # Degree of time-series dependence across lags
     corr_matrix <- diag(1, p)
 
     for (v in 1:(p)) {
@@ -240,23 +240,23 @@ generateData_AR <-
 
     for ( t in 1:(jmax)){
       if (t == 1){
-        Xdd[,t,(1:p)] <- MASS::mvrnorm(TN, mu = rep(0, p), corr_matrix) #scenario 1
+        Xdd[,t,(1:p)] <- MASS::mvrnorm(TN, mu = rep(0, p), corr_matrix) # Scenario 1
       }
       else{
         Xdd[,t,(1:p)] <- rho * Xdd[,t-1,(1:p)] + MASS::mvrnorm(TN, mu = rep(0, p), corr_matrix*(1 - rho^2))
       }
     }
 
-    # transform to its absolute value, as described in the paper
+    # Take the absolute value, as described in the paper
     Xdd = abs(Xdd)
 
-    # storage for all lags, which is ued for LASSO-MIDAS
+    # Storage for all lags used in LASSO-MIDAS
     X_orginal = matrix(1, nrow = TN)
     for (i in seq(numhv)){
       X_orginal = cbind(X_orginal, Xdd[,,i])
     }
 
-    # specify the underlying weight function w1 and w2, which represent Beta(1,3) and Beta(2,3) respectively.
+    # Specify the underlying weight functions w1 and w2, representing Beta(1,3) and Beta(2,3), respectively.
     idx <- 1:(degree+1)
     gindex <- NULL
 
@@ -275,8 +275,8 @@ generateData_AR <-
     #
     dataset = cbind(rep(1, numberOfObservations),  Xdw)
 
-    # Inverse logit function
-    logit_inv <- function(p) log( p / (1 - p))  # Inverse logit function
+    # Logit function (probability to log-odds)
+    logit_inv <- function(p) log( p / (1 - p))  # Logit function (probability to log-odds)
     uniform_rand <- runif(numberOfObservations)
 
     # X^T%*%l
@@ -284,7 +284,7 @@ generateData_AR <-
 
     dataset %>%
       as_tibble() %>%
-      mutate( Ts = s + exp( (logit_inv(uniform_rand) - (cbind(rep(1,numberOfObservations), Xdw_true) %*% parameters)) / (div)), # equation (10) in the paper
+      mutate( Ts = s + exp( (logit_inv(uniform_rand) - (cbind(rep(1,numberOfObservations), Xdw_true) %*% parameters)) / (div)), # Equation (10) in the paper
               censoringtime = s + rexp(numberOfObservations, censor_strength),
               time = pmin(Ts, censoringtime),
               status = as.numeric(Ts <= censoringtime),
@@ -293,48 +293,48 @@ generateData_AR <-
 
 
 #============================================================
-# main part
+# Main section
 #============================================================
 
-# initial setting
+# Initial settings
 s = 6
 
-#quarter/year frequency
+# Quarterly frequency
 high_frequency = 4
 
-# degree of the polynomials
+# Polynomial degree
 degree = 2
 jmax <- s * high_frequency
 
-# Number of covariates K
+# Number of covariates, K
 numhv = 50
 
 # Number of relevant covariates
 numtrue = 2
 
-# Gegenbauer polynomials W, L = 3 <=> degree is set to 2
+# Gegenbauer polynomials W: L = 3 implies degree = 2
 w <- gb(degree = degree, alpha = -1/2, a = 0, b = 1, jmax = jmax)/jmax
 
 # Underlying weight function
 w1 <- dbeta((1:jmax)/(jmax), shape1 = 1, shape2 = 3)
 w2 <- dbeta((1:jmax)/(jmax), shape1 = 2, shape2 = 3)
 
-#true parameters including the intercept, see Example 5.1 in the paper
+# True parameters, including the intercept; see Example 5.1 in the paper
 beta_true = c(1, 1, -1)
 
-#group structure
+# Group structure
 gindex = NULL
 for (z in seq(numhv)){
   gindex <- c(gindex, rep(z, times = degree + 1))
 }
 
-# starting point of the gradient decent algorithm
+# Starting point for the gradient descent algorithm
 intercept_zero = 0
 
-# cross-validation
+# Cross-validation
 alpha = c(1)
 
-#censoring strength gamma, which can generate approximately 81% censoring
+# Censoring-strength parameter gamma, which yields approximately 81% censoring
 censor = 1.7 # 3.9
 test_censoring_AR( s = s, n = 1000, censor_strength = censor)
 
@@ -348,7 +348,7 @@ for (j in seq(100)) {
   set.seed(j)
   n = 800
   print(j)
-  # data prepare
+  # Data preparation
   data = generateData_AR( s = s, numberOfObservations = n, numhv = numhv, numtrue = numtrue, degree = degree, jmax = jmax, parameters = beta_true, censor_strength = censor) # 3, 500, 0.7
   dataset_p = data[ which( (1*( data$time <= t ))*(1*( data$status == 1 )) == 1), ]
   dataset_n = data[ which( (1*( data$time <= t ))*(1*( data$status == 1 )) == 0), ]
@@ -356,14 +356,14 @@ for (j in seq(100)) {
   dataset = testRandomLogitDataset(dataset, t = t )
   dataset = KM_estimate(dataset)
 
-  #5-fold cross validation
+  #5-fold cross-validation
   nfold = 5
   index_fold = which(1*(dataset$time <= t) * 1*(dataset$status == 1) == 1)
-  #dataset for LASSO-UMIDAS
+  # Dataset for LASSO-UMIDAS
   X_orginal = dataset$X_orginal[ , 1:(1+jmax*numhv) ]
   cor1 = cor1 + cor(X_orginal[,(jmax + 2):(2*jmax+1)])
   var1 = var1 + var(X_orginal[,2])
-  #dataset for sg-LASSO-MIDAS
+  # Dataset for sg-LASSO-MIDAS
   X = dataset[ , 1:(numhv*(degree+1)+1) ]
   cor2 = cor2 + cor(X[,2:4])
   var2 = var2 + apply(X[,2:4],2,var)
@@ -372,11 +372,11 @@ for (j in seq(100)) {
 var_scenario2 = var2/100
 c2_2 = cor2/100
 
-# variance ratio
+# Variance ratio
 print(var_scenario2/var_scenario1)
 
 
-# correlation plot
+# Correlation plot
 library(patchwork)
 library(ggplot2)
 library(reshape2)
@@ -399,7 +399,7 @@ fill_scale <- scale_fill_gradient2(
 
 
 compact_theme <- theme(
-  plot.margin = margin(t = 2, r = 2, b = 2, l = 2), # minimal margins
+  plot.margin = margin(t = 2, r = 2, b = 2, l = 2), # Minimal margins
   panel.spacing = unit(1, "mm")
 )
 
@@ -417,7 +417,7 @@ heatmap1 <- ggplot(c2_1_melt, aes(x=Var1, y=Var2, fill=value)) +
     legend.position = "none"
   ) +
   coord_fixed(ratio = 1.5) +
-  scale_y_discrete(expand = c(0,0)) +  # remove extra space at bottom/top
+  scale_y_discrete(expand = c(0,0)) +  # Remove extra space at the top and bottom
   scale_x_discrete(expand = c(0,0)) +
   compact_theme
 

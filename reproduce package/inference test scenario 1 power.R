@@ -1,24 +1,24 @@
-#============================================================
+# Script: inference test scenario 1 power.R
 # Corporate Survival Analysis with Machine Learning Methods
-# Import functions for simulation and empirical application
+# Purpose: Evaluate inference power under simulation scenario 1.
 #============================================================
 
 
 #============================================================
-# Reproduce simulation, scenario 1 Table 2
+# Run the scenario-1 inference power simulation
 #============================================================
 
 
-# clear the environment and import necessary functions
+# Clear the environment and import the required functions
 rm(list = ls())
 
 source('import functions for empirical application.R')
 
 
 
-#load necessary packages
+# Load the required packages
 library(dplyr)
-#library(RSpectra)
+# library(RSpectra)
 library(pROC)
 library(openxlsx)
 library(ggplot2)
@@ -40,26 +40,26 @@ library(lubridate)
 library(timeROC)
 library(glmnet)
 
-# data generating process, scenario 1
-# data generating process, scenario 1
+# Data-generating process: scenario 1
+# Data-generating process: scenario 1
 generateData_AR <-
   function(s, n, numhv, numtrue, degree, jmax, parameters = NA, censor_strength){
     TN = n
-    p <- numhv # Set the dimension of the matrix
-    degree <- degree # degree of the polynomials
-    jmax <- jmax # number of hf obs per lf obs
-    # quarterly covariates
+    p <- numhv # Set the matrix dimensions
+    degree <- degree # Polynomial degree
+    jmax <- jmax # Number of high-frequency observations per low-frequency observation
+    # Quarterly covariates
     Xdd <- array(NA, dim = c(TN, jmax, numhv))
-    # storage for Legendre weighted quarterly
+    # Storage for Legendre-weighted quarterly aggregates
     Xdw <- matrix(NA, nrow = TN, ncol = (degree+1)*numhv)
-    # storage for beta weighted quarterly
+    # Storage for beta-weighted quarterly aggregates
     Xdw_true <- matrix(NA, nrow = TN, ncol = numtrue)
     ##########################################################
     
-    # level of cross-sectional dependence across all variables
+    # Level of cross-sectional dependence across variables
     phi = 0.1
     
-    # degree of time series dependence among its lag
+    # Degree of time-series dependence across lags
     rho = 0.1
     corr_matrix <- diag(1, p)
     
@@ -71,7 +71,7 @@ generateData_AR <-
     
     for (tt in 1:(jmax)){
       if (tt == 1){
-        Xdd[,tt,(1:p)] <- MASS::mvrnorm(TN, mu = rep(0, p), corr_matrix) #scenario 2
+        Xdd[,tt,(1:p)] <- MASS::mvrnorm(TN, mu = rep(0, p), corr_matrix) # Draw the initial innovations
       }
       else{
         Xdd[,tt,(1:p)] <- rho * Xdd[,tt-1,(1:p)] + MASS::mvrnorm(TN, mu = rep(0, p), corr_matrix*(1 - rho^2))
@@ -80,13 +80,13 @@ generateData_AR <-
     
     Xdd = abs(Xdd)
     
-    # storage for all lags, which is ued for LASSO-MIDAS
+    # Storage for all lags used in LASSO-MIDAS
     X_orginal = matrix(1, nrow = TN)
     for (i in seq(numhv)){
       X_orginal = cbind(X_orginal, Xdd[,,i])
     }
     
-    # specify the underlying weight function w1 and w2, which represent Beta(1,3) and Beta(2,3) respectively.
+    # Specify the underlying weight functions w1 and w2, representing Beta(1,3) and Beta(2,3), respectively.
     idx <- 1:(degree+1)
     
     for (z in seq(p)){
@@ -103,8 +103,8 @@ generateData_AR <-
     #
     dataset = cbind(rep(1, n),  Xdw)
     
-    # Inverse logit function
-    logit_inv <- function(p) log( p / (1 - p))  # Inverse logit function
+    # Logit function (probability to log-odds)
+    logit_inv <- function(p) log( p / (1 - p))  # Logit function (probability to log-odds)
     uniform_rand <- runif(n)
     
     # X^T%*%l
@@ -127,7 +127,7 @@ generateData_AR <-
     return(result_df)
   }
 
-# grab the prediction metric for scenario 1
+# Extract the inference metrics for scenario 1
 inf_result = function(result,it){
   se = NULL
   cover = NULL
@@ -163,43 +163,43 @@ inf_result = function(result,it){
   cover = apply(cover, 2, mean)[(1+1):(1+1+degree)]
   ratio = (se/sd)[(1+1):(1+1+degree)]
   res_fit_av_MIDAS = colMeans(res_fit_MIDAS)
-  res_fit_av_LASSO = 0#colMeans(res_fit_LASSO)
+  res_fit_av_LASSO = 0# colMeans(res_fit_LASSO)
   res_fit_av_MIDAS_LASSO = colMeans(res_fit_MIDAS_LASSO)
-  res_fit_var_LASSO = 0#mean(apply(res_fit_LASSO, 2, var))
+  res_fit_var_LASSO = 0# mean(apply(res_fit_LASSO, 2, var))
   b_true = c(beta_true[1] + log((t - s)), beta_true[-1]  +  log((t - s)))
   
-  # parameter estimation evaluation for w1
+  # Evaluate the parameter estimates for w1
   w1_tr = w1 * b_true[1+1]
   w1_es = w%*%as.numeric(res_fit_av_MIDAS[(1+1):(1+1+degree)])
   w1_es_MIDAS_LASSO = w%*%as.numeric(res_fit_av_MIDAS_LASSO[(1+1):(1+1+degree)])
-  w1_es_LASSO = 0 #as.numeric(res_fit_av_LASSO[(1+1):(1+1+jmax-1)])
+  w1_es_LASSO = 0 # as.numeric(res_fit_av_LASSO[(1+1):(1+1+jmax-1)])
   w1_es_sd = round(mean(apply(as.matrix(res_fit_MIDAS[, (1  + 1):(1  + 1 + degree)])%*%t(w), 2, sd)), 5)
-  # here we use MSE = bias^2 + variance, which is close to direct calculation of MASE when the simulation repetation goes large enough
+  # Use MSE = bias^2 + variance, which approaches the directly calculated MASE as the number of simulation repetitions increases
   # w1_es_MSE = mean(colMeans( (w1_tr - w %*% t(res_fit_MIDAS[ , (1+1):(1+1+degree)]) )^2 ))
   w1_es_MSE = round(mean(as.numeric((w1_tr - w1_es)^2) + apply(as.matrix(res_fit_MIDAS[, (1  + 1):(1  + 1 + degree)])%*%t(w), 2, var)), 5)
-  w1_es_sd_LASSO = 0#round(mean(apply(as.matrix(res_fit_LASSO[, (1  + 1):(1  + 1 + jmax - 1)]), 2, sd)), 5)
+  w1_es_sd_LASSO = 0# round(mean(apply(as.matrix(res_fit_LASSO[, (1  + 1):(1  + 1 + jmax - 1)]), 2, sd)), 5)
   # w1_es_MSE_LASSO = mean(colMeans( (w1_tr -  t(res_fit_LASSO[, (1  + 1):(1  + 1 + jmax - 1)]) )^2 ))
-  w1_es_MSE_LASSO = 0#round(mean(as.numeric((w1_tr - w1_es_LASSO)^2) + apply(as.matrix(res_fit_LASSO[, (1  + 1):(1  + 1 + jmax - 1)]), 2, var)), 5)
+  w1_es_MSE_LASSO = 0# round(mean(as.numeric((w1_tr - w1_es_LASSO)^2) + apply(as.matrix(res_fit_LASSO[, (1  + 1):(1  + 1 + jmax - 1)]), 2, var)), 5)
   w1_es_sd_MIDAS_LASSO = round(mean(apply(as.matrix(res_fit_MIDAS_LASSO[, (1  + 1):(1  + 1 + degree)])%*%t(w), 2, sd)), 5)
   # w1_es_MSE_MIDAS_LASSO = mean(colMeans( (w1_tr - w %*% t(res_fit_MIDAS_LASSO[ , (1+1):(1+1+degree)]) )^2 ))
   w1_es_MSE_MIDAS_LASSO = round(mean(as.numeric((w1_tr - w1_es_MIDAS_LASSO)^2) + apply(as.matrix(res_fit_MIDAS_LASSO[, (1  + 1):(1  + 1 + degree)])%*%t(w), 2, var)), 5)
   
-  # parameter estimation evaluation for w1
+  # Evaluate the parameter estimates for w1
   w2_tr = w2 * b_true[1+1+1]
   w2_es = w%*%as.numeric(res_fit_av_MIDAS[(1+1+degree+1):(1+1+degree+1+degree)])
-  w2_es_LASSO = 0#as.numeric(res_fit_av_LASSO[(1+1+jmax):(1+1+jmax*2-1)])
+  w2_es_LASSO = 0# as.numeric(res_fit_av_LASSO[(1+1+jmax):(1+1+jmax*2-1)])
   w2_es_MIDAS_LASSO = w%*%as.numeric(res_fit_av_MIDAS_LASSO[(1+1+degree+1):(1+1+degree+1+degree)])
   w2_es_sd = round(mean(apply(as.matrix(res_fit_MIDAS[, (1+1+degree+1):(1+1+degree+1+degree)])%*%t(w), 2, sd)), 5)
-  w2_es_sd_LASSO = 0#round(mean(apply(as.matrix(res_fit_LASSO[, (1+1+jmax):(1+1+jmax*2-1)]), 2, sd)), 5)
+  w2_es_sd_LASSO = 0# round(mean(apply(as.matrix(res_fit_LASSO[, (1+1+jmax):(1+1+jmax*2-1)]), 2, sd)), 5)
   w2_es_sd_MIDAS_LASSO = round(mean(apply(as.matrix(res_fit_MIDAS_LASSO[, (1+1+degree+1):(1+1+degree+1+degree)])%*%t(w), 2, sd)), 5)
   # w2_es_MSE = mean(colMeans( (w2_tr - w %*% t(res_fit_MIDAS[, (1+1+degree+1):(1+1+degree+1+degree)]) )^2 ))
   # w2_es_MSE_LASSO = mean(colMeans( (w2_tr -  t(res_fit_LASSO[, (1+1+jmax):(1+1+jmax*2-1)]) )^2 ))
   # w2_es_MSE_MIDAS_LASSO = mean(colMeans( (w2_tr - w %*% t(res_fit_MIDAS_LASSO[, (1+1+degree+1):(1+1+degree+1+degree)] ))^2 ))
   w2_es_MSE = round(mean( as.numeric((w2_tr - w2_es)^2) + apply(as.matrix(res_fit_MIDAS[, (1+1+degree+1):(1+1+degree+1+degree)])%*%t(w), 2, var)), 5)
-  w2_es_MSE_LASSO = 0#round(mean(as.numeric((w2_tr - w2_es_LASSO)^2) + apply(as.matrix(res_fit_LASSO[, (1+1+jmax):(1+1+jmax*2-1)]), 2, var)), 5)
+  w2_es_MSE_LASSO = 0# round(mean(as.numeric((w2_tr - w2_es_LASSO)^2) + apply(as.matrix(res_fit_LASSO[, (1+1+jmax):(1+1+jmax*2-1)]), 2, var)), 5)
   w2_es_MSE_MIDAS_LASSO = round(mean(as.numeric((w2_tr - w2_es_MIDAS_LASSO)^2) + apply(as.matrix(res_fit_MIDAS_LASSO[, (1+1+degree+1):(1+1+degree+1+degree)])%*%t(w), 2, var)), 5)
   
-  # return the result
+  # Return the result
   res = list(reject_MIDAS = mean(reject_MIDAS), reject_MIDAS_LASSO = mean(reject_MIDAS_LASSO), reject_LASSO = mean(reject_LASSO),
              test_stat_MIDAS = test_stat_MIDAS, test_stat_MIDAS_LASSO = test_stat_MIDAS_LASSO, test_stat_LASSO = test_stat_LASSO,
              w1_es_MSE = w1_es_MSE, w1_es_sd = w1_es_sd,
@@ -213,7 +213,7 @@ inf_result = function(result,it){
   return(res)
 }
 
-# calculate the censoring rate of a simulation dataset (scenario 1)
+# Calculate the censoring rate for a simulated scenario-1 dataset
 test_censoring_AR = function(s, n, censor_strength){
   res = 0
   for (i in seq(100)){
@@ -225,48 +225,48 @@ test_censoring_AR = function(s, n, censor_strength){
 
 
 #============================================================
-# main part
+# Main section
 #============================================================
 
-# initial setting
+# Initial settings
 s = 6
 
-#quarter/year frequency
+# Quarterly frequency
 high_frequency = 4
 
-# degree of the polynomials
+# Polynomial degree
 degree = 2
 jmax <- s * high_frequency
 
-# Number of covariates K
+# Number of covariates, K
 numhv = 50
 
 # Number of relevant covariates
 numtrue = 2
 
-# Gegenbauer polynomials W, L = 3 <=> degree is set to 2
+# Gegenbauer polynomials W: L = 3 implies degree = 2
 w <- gb(degree = degree, alpha = -1/2, a = 0, b = 1, jmax = jmax)/jmax
 
 # Underlying weight function
 w1 <- dbeta((1:jmax)/(jmax), shape1 = 1, shape2 = 3)*0.1
 w2 <- dbeta((1:jmax)/(jmax), shape1 = 2, shape2 = 3)
 
-#true parameters including the intercept, see Example 5.1 in the paper
+# True parameters, including the intercept; see Example 5.1 in the paper
 beta_true = c(1, 1, -1)
 
-#group structure
+# Group structure
 gindex = NULL
 for (z in seq(numhv)){
   gindex <- c(gindex, rep(z, times = degree + 1))
 }
 
-# starting point of the gradient decent algorithm
+# Starting point for the gradient descent algorithm
 intercept_zero = 0
 
-# cross-validation
+# Cross-validation
 alpha = c(0, 0.5, 1)# c(0, 0.4, 0.8, 1)
 
-#censoring strength gamma, which can generate approximately 81% censoring
+# Censoring-strength parameter gamma, which yields approximately 81% censoring
 censor = 0.81 # 3.9
 test_censoring_AR( s = s, n = 1000, censor_strength = censor)
 
@@ -287,7 +287,7 @@ t
 b_truec = c(beta_true[1] + log((t - s)), beta_true[-1]  +  log((t - s)))
 b_truec = c(b_truec[1:(1)], w1*b_truec[1+1], w2*b_truec[1+1+1])
 
-#call for parallel, notice that the number of cores is dependent on your own laptop
+# Set up parallel processing; choose the number of cores based on your computer
 if (exists("cl")) { try(stopCluster(cl), silent = TRUE) }
 num_cores <- detectCores()
 cl <- makeCluster(max(1, num_cores - 22))
@@ -295,12 +295,12 @@ registerDoParallel(cl)
 packages_to_export <- c('MASS', 'timeROC', 'mvtnorm', 'Survivalml', "dplyr",  "survival", "MLmetrics", "pROC", "PRROC", 'survivalROC', 'dotCall64', 'glmnet', 'rlang', 'pracma')
 vars_to_export <- ls(globalenv())
 
-# repetitions of the simulation
+# Simulation repetitions
 it = 500
 sig_level = 0.05
 v <- qnorm(sig_level/2, lower.tail=F)
 
-#scenario 1 N = 800
+# Scenario 1: N = 800
 i=0
 pa = matrix(0, nrow = length(t_quantile), ncol = 20)
 i = i + 1
@@ -309,7 +309,7 @@ result = foreach(k = 1:it, .errorhandling= 'remove', .packages = packages_to_exp
   n = 1200
   set.seed(k)
   
-  # data prepare
+  # Data preparation
   data = generateData_AR( s = s, n = n, numhv = numhv, numtrue = numtrue, degree = degree, jmax = jmax, parameters = beta_true, censor_strength = censor) # 3, 500, 0.7
   dataset_p = data[ which( (1*( data$time <= t ))*(1*( data$status == 1 )) == 1), ]
   dataset_n = data[ which( (1*( data$time <= t ))*(1*( data$status == 1 )) == 0), ]
@@ -317,7 +317,7 @@ result = foreach(k = 1:it, .errorhandling= 'remove', .packages = packages_to_exp
   dataset = testRandomLogitDataset(dataset, t = t )
   dataset = KM_estimate(dataset)
   
-  #5-fold cross validation
+  #5-fold cross-validation
   nfold = 5
   index_fold = which(1*(dataset$time <= t) * 1*(dataset$status == 1) == 1)
   length(index_fold)
@@ -327,10 +327,10 @@ result = foreach(k = 1:it, .errorhandling= 'remove', .packages = packages_to_exp
     foldid = c( form_folds(nrow(dataset[index_fold,]), nfold), form_folds(nrow(dataset[-index_fold,]), nfold) )
   }
   
-  #dataset for LASSO-UMIDAS
+  # Dataset for LASSO-UMIDAS
   X_orginal = dataset$X_orginal[ , 1:(1+jmax*numhv) ]
   
-  #dataset for sg-LASSO-MIDAS
+  # Dataset for sg-LASSO-MIDAS
   X = dataset[ , 1:(numhv*(degree+1)+1) ]
   y = 1*(dataset$time <= t)
   
@@ -351,7 +351,7 @@ result = foreach(k = 1:it, .errorhandling= 'remove', .packages = packages_to_exp
   test_stat_MIDAS = n * t(ref_MIDAS$est[(1+1):(1+1+degree)])%*% solve(ref_MIDAS$sigma[(1+1):(1+1+degree), (1+1):(1+1+degree)])%*% ref_MIDAS$est[(1+1):(1+1+degree)]
   reject_MIDAS = 1*(test_stat_MIDAS > qchisq(p = 1 - sig_level, df = degree+1))
   
-  #LASSO-MIDAS
+  # LASSO-MIDAS
   if (fit_cv_MIDAS$alpha_out == 1){
     fit_cv_MIDAS_LASSO = fit_cv_MIDAS
     est_MIDAS_LASSO = est_MIDAS
@@ -360,9 +360,9 @@ result = foreach(k = 1:it, .errorhandling= 'remove', .packages = packages_to_exp
     est_MIDAS_LASSO = as.vector( coef(fit_cv_MIDAS_LASSO, s=c('lambda.min') ) )
   }
   
-  #ref_MIDAS_LASSO = ORIG_DS_inf(x=as.matrix(X[,-1]), y = y, family="binomial", lasso_est = est_MIDAS_LASSO, weight = w_train, interest_number = degree + 1, foldid = foldid, variance_km = var_km)
-  #test_stat_MIDAS_LASSO = n * t(ref_MIDAS_LASSO$est[(1+1):(1+1+degree)])%*% solve(ref_MIDAS_LASSO$sigma[(1+1):(1+1+degree), (1+1):(1+1+degree)])%*% ref_MIDAS_LASSO$est[(1+1):(1+1+degree)]
-  #reject_MIDAS_LASSO = 1*(test_stat_MIDAS_LASSO >= qchisq(p = 1 - sig_level, df = degree+1))
+  # ref_MIDAS_LASSO = ORIG_DS_inf(x=as.matrix(X[,-1]), y = y, family="binomial", lasso_est = est_MIDAS_LASSO, weight = w_train, interest_number = degree + 1, foldid = foldid, variance_km = var_km)
+  # test_stat_MIDAS_LASSO = n * t(ref_MIDAS_LASSO$est[(1+1):(1+1+degree)])%*% solve(ref_MIDAS_LASSO$sigma[(1+1):(1+1+degree), (1+1):(1+1+degree)])%*% ref_MIDAS_LASSO$est[(1+1):(1+1+degree)]
+  # reject_MIDAS_LASSO = 1*(test_stat_MIDAS_LASSO >= qchisq(p = 1 - sig_level, df = degree+1))
   
   balance = length(data$Ts[data$Ts <= t])/n
   censoring_proportions = length(which(data$status==0))/n
@@ -374,10 +374,10 @@ result = foreach(k = 1:it, .errorhandling= 'remove', .packages = packages_to_exp
                   test_stat_MIDAS = test_stat_MIDAS, test_stat_MIDAS_LASSO = test_stat_MIDAS, test_stat_LASSO = test_stat_MIDAS)
   return(results)
 }
-#res_df <- as.data.frame(result)
+# res_df <- as.data.frame(result)
 
 # Write to Excel
-#write.table(res_df, "results_scenario1.csv")
+# write.table(res_df, "results_scenario1.csv")
 
 res = inf_result(result, length(result))
 length(result)
@@ -391,12 +391,12 @@ hist(res$test_stat_MIDAS,
 curve(dchisq(x, df = degree+1 ), col = "red", lwd = 2, add = TRUE)
 # 
 # hist(res$test_stat_LASSO,
-#      breaks = 50,
-#      col = "lightblue",
-#      main = "Histogram of Wald Test Statistic",
-#      xlab = "Test Statistic Values",
-#      freq = FALSE,        # IMPORTANT: needed to overlay a density curve
-#      border = "white")
+# breaks = 50,
+# col = "lightblue",
+# main = "Histogram of Wald Test Statistic",
+# xlab = "Test Statistic Values",
+# freq = FALSE,        # IMPORTANT: needed to overlay a density curve
+# border = "white")
 # 
 # curve(dchisq(x, df = jmax ), col = "red", lwd = 2, add = TRUE)
 # legend("topright", legend = "Chi-square Density", col = "red", lwd = 2)

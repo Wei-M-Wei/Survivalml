@@ -1,7 +1,7 @@
 rm(list = ls())
 source('import functions for empirical application.R')
 
-#load necessary packages
+# Script: application 2 for github (s = 10).R - Reproduce the main Application 2 results for s = 10.
 library(midasml)
 library(dplyr)
 library(RSpectra)
@@ -48,9 +48,9 @@ lag_use_year = 4
 quarter = 4
 lags = lag_use_year * quarter - 1
 jmax <- lags
-##########################read the data and check basic information
-data_financial = read.csv2("period_final_new10.csv")  # read function from package readxl
-#data_financial = X_final
+# Read the data and inspect basic information
+data_financial = read.csv2("period_final_new10.csv")  # Read the dataset
+# data_financial = X_final
 dim(data_financial)
 sum(data_financial$status)
 n = dim(data_financial)[1]
@@ -63,7 +63,7 @@ for (col in names(data_financial)[1:p_fin]) {
   }
 }
 
-###########check the median of survival time and censoring time
+# Check the median survival and censoring times
 data = data_financial
 
 end_observation = '2020-12-31'
@@ -96,29 +96,29 @@ dim(test)
 intercept_zero = 0
 degree = 2
 degree_macro = 2
-w_fin <- gb(degree = degree, alpha = 1/2, a = 0, b = 1, jmax = jmax)/jmax #lb(degree = degree, a = 0, b = 1, jmax = jmax)/jmax # gb(degree = degree, alpha = alpha, a = 0, b = 1, jmax = jmax)
-w_macro = gb(degree = degree_macro, alpha = 1/2, a = 0, b = 1, jmax = jmax)/jmax #lb(degree = degree, a = 0, b = 1, jmax = jmax)/jmax # gb(degree = degree, alpha = alpha, a = 0, b = 1, jmax = jmax)
-# tuning parameter grid search
+w_fin <- gb(degree = degree, alpha = 1/2, a = 0, b = 1, jmax = jmax)/jmax # lb(degree = degree, a = 0, b = 1, jmax = jmax)/jmax # gb(degree = degree, alpha = alpha, a = 0, b = 1, jmax = jmax)
+w_macro = gb(degree = degree_macro, alpha = 1/2, a = 0, b = 1, jmax = jmax)/jmax # lb(degree = degree, a = 0, b = 1, jmax = jmax)/jmax # gb(degree = degree, alpha = alpha, a = 0, b = 1, jmax = jmax)
+# Grid search for the tuning parameter
 alpha = c(0.8, 0.85, 0.9, 0.95, 1)
 
-#bootstrap size
+# Bootstrap size
 bootstrap_number = 1000
 
 ###################
 
 for (t in c(13, 13.5, 14)) {
   set.seed(s)
-  ############################################allocate training dataset and test dataset
+  # Allocate the training and test datasets
   train_dataset_in = train
   test_dataset_in = test
 
-  ###########################################calculate the KM weights for each observation
+  # Calculate the KM weight for each observation
   train_dataset = testRandomLogitDataset( train_dataset_in, t = t )
   train_dataset = KM_estimate(train_dataset)
   test_dataset = testRandomLogitDataset( test_dataset_in, t = t )
   test_dataset = KM_estimate(test_dataset)
 
-  # stratified cross validation, see Section 6.2
+  # Stratified cross-validation; see Section 6.2
   nfold = 5
   index_fold = which(1*(train_dataset$time <= t) * 1*(train_dataset$status == 1) == 1)
   if (length(index_fold) <5){
@@ -127,7 +127,7 @@ for (t in c(13, 13.5, 14)) {
     foldid = c( form_folds(nrow(train_dataset[index_fold,]), nfold), form_folds(nrow(train_dataset[-index_fold,]), nfold) )
   }
 
-  #we have 14 variables which are related to T,C and etc. Then delete them
+  # Remove the 14 variables related to T, C, etc.
   X_train = train_dataset[ , 1: (dim(train_dataset)[2]-14) ]
   y_train = 1*(train_dataset$time <= t)
   X_test = as.matrix( test_dataset[ , 1: (dim(train_dataset)[2]-14) ] )
@@ -147,13 +147,13 @@ for (t in c(13, 13.5, 14)) {
     gindex <- c(gindex, rep(z, times = degree + 1))
   }
 
-  #training dataset which are used to in the SGL-MIDAS
+  # Training dataset used in SGL-MIDAS
   X_in = as.matrix(cbind(rep(1, nrow(X_train)), Xdw))
   fit_cv_MIDAS = alpha_cv_sparsegl( X_in[,-1], y_train, group = gindex, nlambda = 200, weight = w_train, alpha = alpha, nfolds = 5, foldid = foldid, pred.loss = 'censor', intercept_zero = intercept_zero, standardize = TRUE, AUC = TRUE, data = train_dataset, t = t)
   est_MIDAS = fit_cv_MIDAS$coff
   est_MIDAS_AUC = fit_cv_MIDAS$coff_AUC
 
-  #test dataset
+  # Test dataset
   X_t = NULL
   for (z in seq(dim(X_test)[2]/jmax)){
     z_idx <- (1 + (z - 1)*jmax) : (z * jmax)
@@ -161,7 +161,7 @@ for (t in c(13, 13.5, 14)) {
   }
   X_te = as.matrix(cbind(rep(1, nrow(X_test)),  X_t))
 
-  #time dependent AUC and bootstrap
+  # Time-dependent AUC and bootstrap
   test_predictions_MIDAS = unlist( as.list(plogis(X_te %*% est_MIDAS)) )
   test_predictions_MIDAS_AUC = unlist( as.list(plogis(X_te %*% est_MIDAS_AUC)) )
 
@@ -172,7 +172,7 @@ for (t in c(13, 13.5, 14)) {
   AUC_MIDAS_AUC_bootstrap =  ROC_N_bootstrap(data = test_dataset, prediction = test_predictions_MIDAS_AUC, t = t, sim_number = bootstrap_number )
 
 
-  #LASSO-MIDAS, cross-validation for log-likelihood score
+  # LASSO-MIDAS, cross-validation for log-likelihood score
   if (fit_cv_MIDAS$alpha_out == 1){
     fit_cv_MIDAS_LASSO = fit_cv_MIDAS
     test_predictions_MIDAS_LASSO = test_predictions_MIDAS
@@ -181,11 +181,11 @@ for (t in c(13, 13.5, 14)) {
     fit_cv_MIDAS_LASSO = fit_cv_MIDAS$fit_MIDAS_LASSO
     cesnor_min_index = which(fit_cv_MIDAS_LASSO$cvm == min(fit_cv_MIDAS_LASSO$cvm))[1]
     est_MIDAS_LASSO = unlist(c(fit_cv_MIDAS_LASSO$survival_sparsegl.fit$b0[,cesnor_min_index], fit_cv_MIDAS_LASSO$survival_sparsegl.fit$beta[,cesnor_min_index]))
-    test_predictions_MIDAS_LASSO = unlist( as.list(plogis(X_te %*% est_MIDAS_LASSO )) ) #predict(fit_cv_MIDAS_LASSO, X_te[,-1], s = 'lambda.min', type = 'response')
+    test_predictions_MIDAS_LASSO = unlist( as.list(plogis(X_te %*% est_MIDAS_LASSO )) ) # predict(fit_cv_MIDAS_LASSO, X_te[,-1], s = 'lambda.min', type = 'response')
   }
   AUC_MIDAS_LASSO = ROC_censor_N(data = test_dataset, prediction = test_predictions_MIDAS_LASSO, t = t )$AUC
 
-  #LASSO-MIDAS, cross-validation for AUC
+  # LASSO-MIDAS, cross-validation for AUC
   if (fit_cv_MIDAS$alpha_AUC == 1){
     fit_cv_MIDAS_LASSO = fit_cv_MIDAS
     test_predictions_MIDAS_LASSO_AUC = test_predictions_MIDAS_AUC
@@ -194,15 +194,15 @@ for (t in c(13, 13.5, 14)) {
     fit_cv_MIDAS_LASSO = fit_cv_MIDAS$fit_MIDAS_LASSO
     cesnor_min_index = which(fit_cv_MIDAS_LASSO$AUC_censor == max(fit_cv_MIDAS_LASSO$AUC_censor))[1]
     est_MIDAS_LASSO_AUC = unlist(c(fit_cv_MIDAS_LASSO$survival_sparsegl.fit$b0[,cesnor_min_index], fit_cv_MIDAS_LASSO$survival_sparsegl.fit$beta[,cesnor_min_index]))
-    test_predictions_MIDAS_LASSO_AUC = unlist( as.list(plogis(X_te %*% est_MIDAS_LASSO_AUC )) ) #predict(fit_cv_MIDAS_LASSO, X_te[,-1], s = 'lambda.min', type = 'response')
+    test_predictions_MIDAS_LASSO_AUC = unlist( as.list(plogis(X_te %*% est_MIDAS_LASSO_AUC )) ) # predict(fit_cv_MIDAS_LASSO, X_te[,-1], s = 'lambda.min', type = 'response')
   }
   AUC_MIDAS_LASSO_AUC = ROC_censor_N(data = test_dataset, prediction = test_predictions_MIDAS_LASSO_AUC, t = t )$AUC
 
-  # bootstrap for LASSO-MIDAS
+  # Bootstrap for LASSO-MIDAS
   AUC_MIDAS_LASSO_bootstrap =  ROC_N_bootstrap(data = test_dataset, prediction = test_predictions_MIDAS_LASSO, t = t, sim_number = bootstrap_number )
   AUC_MIDAS_LASSO_AUC_bootstrap =  ROC_N_bootstrap(data = test_dataset, prediction = test_predictions_MIDAS_LASSO_AUC, t = t, sim_number = bootstrap_number )
 
-  #LASSO-UMIDAS
+  # LASSO-UMIDAS
   fit_cv_LASSO = cv.survival_sparsegl(X_train, y_train, group = seq(dim(X_train)[2]), nlambda = 200, weight = w_train, asparse = 1, foldid = foldid, nfolds = 5, pred.loss = 'censor', intercept_zero = intercept_zero, standardize = TRUE, maxit = 30000, AUC = TRUE, data = train_dataset, t = t)
   nan_indices <- sapply(fit_cv_LASSO$cvm, is.nan)
   fit_cv_LASSO$cvm[nan_indices] <- 1000
@@ -223,7 +223,7 @@ for (t in c(13, 13.5, 14)) {
   AUC_LASSO_bootstrap =  ROC_N_bootstrap(data = test_dataset, prediction = test_predictions_LASSO, t = t, sim_number = bootstrap_number )
   AUC_LASSO_AUC_bootstrap =  ROC_N_bootstrap(data = test_dataset, prediction = test_predictions_LASSO_AUC, t = t, sim_number = bootstrap_number )
 
-  #return results
+  # Return the results
   results = list(
     AUC_LASSO = round( AUC_LASSO, 3 ), AUC_MIDAS = round(AUC_MIDAS, 3 ), AUC_MIDAS_LASSO = round(AUC_MIDAS_LASSO, 3 ),
     AUC_LASSO_bootstrap = AUC_LASSO_bootstrap, AUC_MIDAS_bootstrap = AUC_MIDAS_bootstrap, AUC_MIDAS_LASSO_bootstrap = AUC_MIDAS_LASSO_bootstrap,
@@ -303,7 +303,7 @@ for (t in c(13, 13.5, 14)) {
   AUC_MIDAS_LASSO_AUC_bootstrap_av = colMeans(AUC_MIDAS_LASSO_AUC_bootstrap)
   ###########################################
 
-  #Final results for s = 6 years and t = 8,8.5,9 years
+  # Final results for s = 10 years and t = 13, 13.5, and 14 years
   res = list(
     AUC_MIDAS = round(colMeans(AUC_MIDAS),3), AUC_MIDAS_VAR = round(apply(AUC_MIDAS, 2, var),3),
     AUC_LASSO = round(colMeans(AUC_LASSO),3), AUC_LASSO_VAR = round(apply(AUC_LASSO, 2, var),3),
@@ -320,7 +320,7 @@ for (t in c(13, 13.5, 14)) {
     res_fit_av_MIDAS_AUC = res_fit_av_MIDAS_AUC, res_fit_av_LASSO_AUC = res_fit_av_LASSO_AUC, res_fit_av_MIDAS_LASSO_AUC = res_fit_av_MIDAS_LASSO_AUC
   )
 
-  # save the table
+  # Save the table
   table_name1 <- paste0("Application_2_MIDAS_AUC", s, "_AUC_cvm", t, ".csv")
   table_name2 <- paste0("Application_2_MIDAS_AUC", s, "_AUC", t, ".csv")
   table_name3 <- paste0("Application_2_MIDAS_bootstrap", s, "_AUC_cvm", t, ".csv")
@@ -363,17 +363,17 @@ for (t in c(13, 13.5, 14)) {
 ########################################
 for (t in c(13, 13.5, 14)) {
   set.seed(s)
-  ############################################allocate training dataset and test dataset
+  # Allocate the training and test datasets
   train_dataset_in = train
   test_dataset_in = test
 
-  ###########################################calculate the KM weights for each observation
+  # Calculate the KM weight for each observation
   train_dataset = testRandomLogitDataset( train_dataset_in, t = t )
   train_dataset = KM_estimate(train_dataset)
   test_dataset = testRandomLogitDataset( test_dataset_in, t = t )
   test_dataset = KM_estimate(test_dataset)
 
-  # stratified cross validation, see Section 6.2
+  # Stratified cross-validation; see Section 6.2
   index_train = which(train_dataset$censoringtime >= t)
   nfold = 5
   train_dataset = train_dataset[index_train, ]
@@ -384,7 +384,7 @@ for (t in c(13, 13.5, 14)) {
     foldid = c( form_folds(nrow(train_dataset[index_fold,]), nfold), form_folds(nrow(train_dataset[-index_fold,]), nfold) )
   }
 
-  #we have 14 variables which are related to T,C and etc. Then delete them
+  # Remove the 14 variables related to T, C, etc.
   X_train = train_dataset[ , 1: (dim(train_dataset)[2]-14) ]
   y_train = 1*(train_dataset$time <= t)
   X_test = as.matrix( test_dataset[ , 1: (dim(train_dataset)[2]-14) ] )
@@ -404,13 +404,13 @@ for (t in c(13, 13.5, 14)) {
     gindex <- c(gindex, rep(z, times = degree + 1))
   }
 
-  #training dataset which are used to in the SGL-MIDAS
+  # Training dataset used in SGL-MIDAS
   X_in = as.matrix(cbind(rep(1, nrow(X_train)), Xdw))
   fit_cv_MIDAS = alpha_cv_sparsegl( X_in[,-1], y_train, group = gindex, nlambda = 200, weight = w_train, alpha = alpha, nfolds = 5, foldid = foldid, pred.loss = 'censor', intercept_zero = intercept_zero, standardize = TRUE, AUC = TRUE, data = train_dataset, t = t)
   est_MIDAS = fit_cv_MIDAS$coff
   est_MIDAS_AUC = fit_cv_MIDAS$coff_AUC
 
-  #test dataset
+  # Test dataset
   X_t = NULL
   for (z in seq(dim(X_test)[2]/jmax)){
     z_idx <- (1 + (z - 1)*jmax) : (z * jmax)
@@ -418,7 +418,7 @@ for (t in c(13, 13.5, 14)) {
   }
   X_te = as.matrix(cbind(rep(1, nrow(X_test)),  X_t))
 
-  #time dependent AUC and bootstrap
+  # Time-dependent AUC and bootstrap
   test_predictions_MIDAS = unlist( as.list(plogis(X_te %*% est_MIDAS)) )
   test_predictions_MIDAS_AUC = unlist( as.list(plogis(X_te %*% est_MIDAS_AUC)) )
 
@@ -429,7 +429,7 @@ for (t in c(13, 13.5, 14)) {
   AUC_MIDAS_AUC_bootstrap =  ROC_N_bootstrap(data = test_dataset, prediction = test_predictions_MIDAS_AUC, t = t, sim_number = bootstrap_number )
 
 
-  #LASSO-MIDAS, cross-validation for log-likelihood score
+  # LASSO-MIDAS, cross-validation for log-likelihood score
   if (fit_cv_MIDAS$alpha_out == 1){
     fit_cv_MIDAS_LASSO = fit_cv_MIDAS
     test_predictions_MIDAS_LASSO = test_predictions_MIDAS
@@ -438,11 +438,11 @@ for (t in c(13, 13.5, 14)) {
     fit_cv_MIDAS_LASSO = fit_cv_MIDAS$fit_MIDAS_LASSO
     cesnor_min_index = which(fit_cv_MIDAS_LASSO$cvm == min(fit_cv_MIDAS_LASSO$cvm))[1]
     est_MIDAS_LASSO = unlist(c(fit_cv_MIDAS_LASSO$survival_sparsegl.fit$b0[,cesnor_min_index], fit_cv_MIDAS_LASSO$survival_sparsegl.fit$beta[,cesnor_min_index]))
-    test_predictions_MIDAS_LASSO = unlist( as.list(plogis(X_te %*% est_MIDAS_LASSO )) ) #predict(fit_cv_MIDAS_LASSO, X_te[,-1], s = 'lambda.min', type = 'response')
+    test_predictions_MIDAS_LASSO = unlist( as.list(plogis(X_te %*% est_MIDAS_LASSO )) ) # predict(fit_cv_MIDAS_LASSO, X_te[,-1], s = 'lambda.min', type = 'response')
   }
   AUC_MIDAS_LASSO = ROC_censor_N(data = test_dataset, prediction = test_predictions_MIDAS_LASSO, t = t )$AUC
 
-  #LASSO-MIDAS, cross-validation for AUC
+  # LASSO-MIDAS, cross-validation for AUC
   if (fit_cv_MIDAS$alpha_AUC == 1){
     fit_cv_MIDAS_LASSO = fit_cv_MIDAS
     test_predictions_MIDAS_LASSO_AUC = test_predictions_MIDAS_AUC
@@ -451,15 +451,15 @@ for (t in c(13, 13.5, 14)) {
     fit_cv_MIDAS_LASSO = fit_cv_MIDAS$fit_MIDAS_LASSO
     cesnor_min_index = which(fit_cv_MIDAS_LASSO$AUC_censor == max(fit_cv_MIDAS_LASSO$AUC_censor))[1]
     est_MIDAS_LASSO_AUC = unlist(c(fit_cv_MIDAS_LASSO$survival_sparsegl.fit$b0[,cesnor_min_index], fit_cv_MIDAS_LASSO$survival_sparsegl.fit$beta[,cesnor_min_index]))
-    test_predictions_MIDAS_LASSO_AUC = unlist( as.list(plogis(X_te %*% est_MIDAS_LASSO_AUC )) ) #predict(fit_cv_MIDAS_LASSO, X_te[,-1], s = 'lambda.min', type = 'response')
+    test_predictions_MIDAS_LASSO_AUC = unlist( as.list(plogis(X_te %*% est_MIDAS_LASSO_AUC )) ) # predict(fit_cv_MIDAS_LASSO, X_te[,-1], s = 'lambda.min', type = 'response')
   }
   AUC_MIDAS_LASSO_AUC = ROC_censor_N(data = test_dataset, prediction = test_predictions_MIDAS_LASSO_AUC, t = t )$AUC
 
-  # bootstrap for LASSO-MIDAS
+  # Bootstrap for LASSO-MIDAS
   AUC_MIDAS_LASSO_bootstrap =  ROC_N_bootstrap(data = test_dataset, prediction = test_predictions_MIDAS_LASSO, t = t, sim_number = bootstrap_number )
   AUC_MIDAS_LASSO_AUC_bootstrap =  ROC_N_bootstrap(data = test_dataset, prediction = test_predictions_MIDAS_LASSO_AUC, t = t, sim_number = bootstrap_number )
 
-  #LASSO-UMIDAS
+  # LASSO-UMIDAS
   fit_cv_LASSO = cv.survival_sparsegl(X_train, y_train, group = seq(dim(X_train)[2]), nlambda = 200, weight = w_train, asparse = 1, foldid = foldid, nfolds = 5, pred.loss = 'censor', intercept_zero = intercept_zero, standardize = TRUE, maxit = 30000, AUC = TRUE, data = train_dataset, t = t)
   nan_indices <- sapply(fit_cv_LASSO$cvm, is.nan)
   fit_cv_LASSO$cvm[nan_indices] <- 1000
@@ -480,7 +480,7 @@ for (t in c(13, 13.5, 14)) {
   AUC_LASSO_bootstrap =  ROC_N_bootstrap(data = test_dataset, prediction = test_predictions_LASSO, t = t, sim_number = bootstrap_number )
   AUC_LASSO_AUC_bootstrap =  ROC_N_bootstrap(data = test_dataset, prediction = test_predictions_LASSO_AUC, t = t, sim_number = bootstrap_number )
 
-  #return results
+  # Return the results
   results = list(
     AUC_LASSO = round( AUC_LASSO, 3 ), AUC_MIDAS = round(AUC_MIDAS, 3 ), AUC_MIDAS_LASSO = round(AUC_MIDAS_LASSO, 3 ),
     AUC_LASSO_bootstrap = AUC_LASSO_bootstrap, AUC_MIDAS_bootstrap = AUC_MIDAS_bootstrap, AUC_MIDAS_LASSO_bootstrap = AUC_MIDAS_LASSO_bootstrap,
@@ -559,7 +559,7 @@ for (t in c(13, 13.5, 14)) {
   AUC_MIDAS_LASSO_AUC_bootstrap_av = colMeans(AUC_MIDAS_LASSO_AUC_bootstrap)
   ###########################################
 
-  #Final results for s = 6 years and t = 8,8.5,9 years
+  # Final results for s = 10 years and t = 13, 13.5, and 14 years
   res = list(
     AUC_MIDAS = round(colMeans(AUC_MIDAS),3), AUC_MIDAS_VAR = round(apply(AUC_MIDAS, 2, var),3),
     AUC_LASSO = round(colMeans(AUC_LASSO),3), AUC_LASSO_VAR = round(apply(AUC_LASSO, 2, var),3),
@@ -576,7 +576,7 @@ for (t in c(13, 13.5, 14)) {
     res_fit_av_MIDAS_AUC = res_fit_av_MIDAS_AUC, res_fit_av_LASSO_AUC = res_fit_av_LASSO_AUC, res_fit_av_MIDAS_LASSO_AUC = res_fit_av_MIDAS_LASSO_AUC
   )
 
-  # save the table
+  # Save the table
   table_name1 <- paste0("Application_2_comparison_MIDAS_AUC", s, "_AUC_cvm", t, ".csv")
   table_name2 <- paste0("Application_2_comparison_MIDAS_AUC", s, "_AUC", t, ".csv")
   table_name3 <- paste0("Application_2_comparison_MIDAS_bootstrap", s, "_AUC_cvm", t, ".csv")

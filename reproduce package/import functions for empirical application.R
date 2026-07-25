@@ -1,11 +1,11 @@
-#============================================================
+# Script: import functions for empirical application.R
 # Corporate Survival Analysis with Machine Learning Methods
-# Import functions for simulation and empirical application
+# Purpose: Define helper functions used by the empirical applications.
 #============================================================
 
 
 
-# cross-validation for sparse group lasso
+# Cross-validation for the sparse-group LASSO
 alpha_cv_sparsegl = function(X, y, group, nlambda = 50, lambda = NULL, weight , alpha , foldid = NULL , nfolds, pred.loss = 'censor', intercept_zero = 0, standardize = TRUE, AUC = FALSE, data = NULL, t = 0, maxit = 30000){
   cv_error = matrix(nlambda, length(alpha), nlambda )
   AUC_c = matrix(0, length(alpha), nlambda )
@@ -115,7 +115,7 @@ gb <- function(degree,alpha,a=0,b=1,jmax=NULL,X=NULL){
   return(Psi)
 }
 
-# calculate the Kaplan-meier estimator for censoring time C
+# Calculate the Kaplan-Meier estimator for the censoring time C
 testRandomLogitDataset <-
   function(data,t){
     data %>%
@@ -153,7 +153,7 @@ IF_estimate <-
   }
 
 
-# cut folds for cross-validation
+# Create folds for cross-validation
 form_folds <- function(n_obs, nfold){
   folds <- cut(seq(1,n_obs),breaks=nfold,labels=FALSE)
   folds_final <- sample(folds, replace = FALSE)
@@ -161,7 +161,7 @@ form_folds <- function(n_obs, nfold){
 }
 
 
-# time-dependent AUC estimator, from package 'survivalROC'
+# Calculate the time-dependent AUC using the 'survivalROC' package
 ROC_censor_N = function(data, prediction, t, cut.values = NULL ){
   AUC_N = survivalROC(Stime=data$time, status= data$status, marker = prediction, predict.time = t, span = 0.25*nrow(data)^(-1/2))
   # plot(AUC_N$FP, AUC_N$TP, type="l", xlim=c(0,1), ylim=c(0,1), xlab=paste( "FP", "\n", "AUC = ",round(AUC_N$AUC,3)), ylab="TP",main="Method = NNE ")
@@ -183,7 +183,7 @@ ROC_N_bootstrap = function(data, prediction, t, sim_number){
 }
 
 
-# Transfer the format of time
+# Standardize the date format
 convert_to_ymd <- function(date_str) {
   # Check if the year is at the beginning (yyyy-mm-dd)
   if (grepl("^[0-9]{4}", date_str)) {
@@ -211,10 +211,10 @@ convert_to_ymd <- function(date_str) {
 }
 
 
-# Merge the macro data with the financial data, 'process.xls' is the macro data
+# Merge the financial data with the macro data stored in 'process.xls'
 macro_to_be_merge = function(data_financial, lag_use_year){
   
-  ########################################initial settings and read the macro data
+  # Set initial values and read the macro data
   quarter = 4
   macro_lags = lag_use_year * quarter
   data_in = read_xls('process.xls')
@@ -227,18 +227,18 @@ macro_to_be_merge = function(data_financial, lag_use_year){
   data_macro$start_day = sapply(data_financial$start_day, convert_to_ymd)
   n = dim(data_financial)[1]
   
-  ########################start year and the end year of the covariates
+  # Define the start and end years for the covariates
   end_in = 2023
   sat_in = 1985
   
   
-  ###################Total number of macro covariates is 98
+  # The total number of macroeconomic covariates is 98
   macro_num = 98
   index_macro = seq( 1, 1  + ((2023 - 1985) + 1)*4*macro_num - 1, 1 )
   total_macro = length(index_macro)
   
   
-  ######################################################merge the macro data
+  # Merge the macroeconomic data
   lags = lag_use_year * 4
   X_g = data.frame(matrix(ncol = 0, nrow = 0))
   data_pre = data_macro
@@ -258,7 +258,7 @@ macro_to_be_merge = function(data_financial, lag_use_year){
   
   
   ###############################
-  # delete covariates which have missing values
+  # Remove covariates with missing values
   empty_columns <- unique(which(colSums(is.na(X_g)) > 0))
   ind_remove = NULL
   for (k in empty_columns) {
@@ -278,7 +278,7 @@ macro_to_be_merge = function(data_financial, lag_use_year){
   }
   X_macro = X_g[, -remove_all]
   
-  #Remove the last lag
+  # Remove the last lag
   lag_of_covariates = (lag_use_year-0.25)
   interval <- lag_of_covariates*quarter
   
@@ -298,7 +298,7 @@ macro_to_be_merge = function(data_financial, lag_use_year){
   
 }
 
-# data preprocess functions
+# Data-preprocessing functions
 next_quarter <- function(year, month) {
   
   current_quarter <- (month - 1) %/% 3 + 1
@@ -356,7 +356,7 @@ reverse_matrix <- function(mat, p, group_size) {
 }
 
 # Simulation section
-# grab the prediction metric for simulation
+# Calculate the simulation prediction metrics
 paral_independent = function(result,it){
   res_fit_MIDAS = NULL
   res_fit_MIDAS_LASSO = NULL
@@ -437,7 +437,7 @@ paral_independent = function(result,it){
   return(res)
 }
 
-#check the censoring rate
+# Check the censoring rate
 test_censoring_AR = function(s = s, n, censor_strength){
   res = 0
   for (i in seq(100)){
@@ -450,7 +450,7 @@ test_censoring_AR = function(s = s, n, censor_strength){
 
 
 ###########################################################################
-# De-biased sg-LASSO estimator for GLM with observation-level influence function adjustment
+# Debiased sparse-group LASSO estimator for a GLM with observation-level influence-function adjustment
 
 ORIG_DS_inf <- function(x, y, family, lasso_est, weight, nfold=5, n_lambda=50,
                         lambda_ratio=0.005, interest_number = NULL, foldid, variance_km) {
@@ -486,7 +486,7 @@ ORIG_DS_inf <- function(x, y, family, lasso_est, weight, nfold=5, n_lambda=50,
   theta_glmnet <- diag(pp+1)
   tau_glmnet <- rep(NA, pp+1)
 
-  for(j in 1:n_debias) { # nodewise lasso for parameters of interest
+  for(j in 1:n_debias) { # Fit the nodewise LASSO for each parameter of interest
     current_x <- sqrt(nn)*C_glmnet[, -j]
     current_y <- sqrt(nn)*as.vector(C_glmnet[, j])
 

@@ -1,5 +1,5 @@
 rm(list = ls())
-###############################################
+# Script: application 2 Benchmark for github (s = 10).R
 
 
 KM_estimate <-
@@ -14,15 +14,15 @@ KM_estimate <-
   }
 
 
-######################################
+# Purpose: Reproduce the Application 2 benchmark results for s = 10.
 s = 10
 lag_use_year = 4
 quarter = 4
 lags = lag_use_year * quarter - 1
 jmax <- lags
-##########################read the data and check basic information
-data_financial = read.csv2("period_final_new10.csv")  # read function from package readxl
-#data_financial = X_final
+# Read the data and inspect basic information
+data_financial = read.csv2("period_final_new10.csv")  # Read the dataset
+# data_financial = X_final
 dim(data_financial)
 sum(data_financial$status)
 n = dim(data_financial)[1]
@@ -35,7 +35,7 @@ for (col in names(data_financial)[1:p_fin]) {
   }
 }
 
-###########check the median of survival time and censoring time
+# Check the median survival and censoring times
 data = data_financial
 
 end_observation = '2020-12-31'
@@ -65,25 +65,25 @@ sort(train[censor_firm,]$survival_time)
 dim(train)
 dim(test)
 
-#bootstrap size
+# Bootstrap size
 bootstrap_number = 1000
 
 ###################
 
 for (t in c(13, 13.5, 14)) {
   set.seed(s)
-  ############################################allocate training dataset and test dataset
+  # Allocate the training and test datasets
   train_dataset_in = train
   test_dataset_in = test
 
-  ###########################################calculate the KM weights for each observation
+  # Calculate the KM weight for each observation
   train_dataset = testRandomLogitDataset( train_dataset_in, t = t )
   train_dataset = KM_estimate(train_dataset)
   test_dataset = testRandomLogitDataset( test_dataset_in, t = t )
   test_dataset = KM_estimate(test_dataset)
 
 
-  #we have 14 variables which are related to T,C and etc. Then delete them
+  # Remove the 14 variables related to T, C, etc.
   X_train = train_dataset[,seq(lags, dim(train_dataset)[2],lags)]
   y_train = 1*(train_dataset$time <= t)
   X_test = test_dataset[,seq(lags, dim(test_dataset)[2],lags)]
@@ -121,7 +121,7 @@ for (t in c(13, 13.5, 14)) {
   res = list(AUC_MIDAS = round(colMeans(AUC_MIDAS),3), AUC_MIDAS_VAR = round(apply(AUC_MIDAS, 2, var),3), AUC_MIDAS_bootstrap_av = round(AUC_MIDAS_bootstrap_av, 3 ))
 
 
-  # save the table
+  # Save the table
   table_name1 <- paste0("application2_bench_MIDAS_AUC", s, "_AUC_cvm", t, ".csv")
   write.csv(rbind( c(res$AUC_MIDAS, res$AUC_MIDAS_VAR) ,
                    c( quantile(res$AUC_MIDAS_bootstrap_av, 0.025), quantile(res$AUC_MIDAS_bootstrap_av, 0.975)

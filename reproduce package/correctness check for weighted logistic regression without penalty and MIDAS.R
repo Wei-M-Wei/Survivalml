@@ -1,11 +1,11 @@
-#============================================================
+# Script: correctness check for weighted logistic regression without penalty and MIDAS.R
 # Corporate Survival Analysis with Machine Learning Methods
-# Import functions for simulation and empirical application
+# Purpose: Validate weighted logistic regression without penalization or MIDAS aggregation.
 #============================================================
 
 
 #============================================================
-# Correctness check, weighted logistic regression without penaly and MIDAS
+# Correctness check for weighted logistic regression without a penalty or MIDAS
 # The goal is to check the MSE of estimated parameters
 #============================================================
 
@@ -17,7 +17,7 @@ source('import functions for empirical application.R')
 
 
 
-#load necessary packages
+# Load the required packages
 library(midasml)
 library(dplyr)
 library(RSpectra)
@@ -44,33 +44,33 @@ library(Survivalml)
 library(lubridate)
 library(timeROC)
 
-# data generating process, scenario 1
+# Data-generating process: scenario 1
 generateData_AR <-
   function(s = s, numberOfObservations, numhv, numtrue, degree, jmax, parameters = NA, censor_strength){
     TN = numberOfObservations
-    p <- numhv # Set the dimension of the matrix
-    degree <- degree # degree of the polynomials
-    jmax <- jmax # number of hf obs per lf obs
-    # quarterly covariates
+    p <- numhv # Set the matrix dimensions
+    degree <- degree # Polynomial degree
+    jmax <- jmax # Number of high-frequency observations per low-frequency observation
+    # Quarterly covariates
     Xdd <- array(NA, dim = c(TN, jmax, numhv))
-    # storage for Legendre weighted quarterly
+    # Storage for Legendre-weighted quarterly aggregates
     Xdw <- matrix(NA, nrow = TN, ncol = (degree+1)*numhv)
-    # storage for beta weighted quarterly
+    # Storage for beta-weighted quarterly aggregates
     Xdw_true <- matrix(NA, nrow = TN, ncol = numtrue)
-    # storage for quarterly
+    # Storage for quarterly data
     Xdd_g <- array(NA, dim = c(TN, jmax, numhv))
-    # storage for Legendre weighted quarterly
+    # Storage for Legendre-weighted quarterly aggregates
     Xdw_g <- matrix(NA, nrow = TN, ncol = (degree+1)*numhv)
-    # storage for beta weighted quarterly
+    # Storage for beta-weighted quarterly aggregates
     Xdw_true_g <- matrix(NA, nrow = TN, ncol = numtrue)
     ##########################################################
 
     Xd <- matrix(0, nrow = TN*jmax, ncol = p)
 
-    # level of cross-sectional dependence across all variables
+    # Level of cross-sectional dependence across variables
     phi = 0.1
 
-    # degree of time series dependence among its lag
+    # Degree of time-series dependence across lags
     rho = 0.1
     corr_matrix <- diag(1, p)
 
@@ -82,7 +82,7 @@ generateData_AR <-
 
     for ( t in 1:(jmax)){
       if (t == 1){
-        Xdd[,t,(1:p)] <- MASS::mvrnorm(TN, mu = rep(0, p), corr_matrix*(1 - rho^2)) #scenario 1
+        Xdd[,t,(1:p)] <- MASS::mvrnorm(TN, mu = rep(0, p), corr_matrix*(1 - rho^2)) # Scenario 1
       }
       else{
         Xdd[,t,(1:p)] <- rho * Xdd[,t-1,(1:p)] + MASS::mvrnorm(TN, mu = rep(0, p), corr_matrix*(1 - rho^2))
@@ -92,13 +92,13 @@ generateData_AR <-
     Xdd = abs(Xdd)
 
 
-    # storage for all lags, which is ued for LASSO-MIDAS
+    # Storage for all lags used in LASSO-MIDAS
     X_orginal = matrix(1, nrow = TN)
     for (i in seq(numhv)){
       X_orginal = cbind(X_orginal, Xdd[,,i])
     }
 
-    # specify the underlying weight function w1 and w2, which represent Beta(1,3) and Beta(2,3) respectively.
+    # Specify the underlying weight functions w1 and w2, representing Beta(1,3) and Beta(2,3), respectively.
     idx <- 1:(degree+1)
     gindex <- NULL
 
@@ -117,8 +117,8 @@ generateData_AR <-
     #
     dataset = cbind(rep(1, numberOfObservations),  Xdw)
 
-    # Inverse logit function
-    logit_inv <- function(p) log( p / (1 - p))  # Inverse logit function
+    # Logit function (probability to log-odds)
+    logit_inv <- function(p) log( p / (1 - p))  # Logit function (probability to log-odds)
     uniform_rand <- runif(numberOfObservations)
 
     # X^T%*%l
@@ -126,14 +126,14 @@ generateData_AR <-
 
     dataset %>%
       as_tibble() %>%
-      mutate( Ts = s + exp( (logit_inv(uniform_rand) - (cbind(rep(1,numberOfObservations), Xdw_true) %*% parameters)) / (div)), # equation (10) in the paper
+      mutate( Ts = s + exp( (logit_inv(uniform_rand) - (cbind(rep(1,numberOfObservations), Xdw_true) %*% parameters)) / (div)), # Equation (10) in the paper
               censoringtime = s + rexp(numberOfObservations, censor_strength),
               time = pmin(Ts, censoringtime),
               status = as.numeric(Ts <= censoringtime),
               X_orginal = X_orginal)
   }
 
-# grab the prediction metric
+# Extract the prediction metric
 paral_independent = function(result,it){
   res_fit_MIDAS = NULL
   res_fit_MIDAS_LASSO = NULL
@@ -205,40 +205,40 @@ test_censoring_AR = function(s = s, n, censor_strength){
   return(res/100)
 }
 
-# initial setting
+# Initial settings
 s = 1
 
-#quratker/year frequency
+# Quarterly frequency
 high_frequency = 2
 
-# degree of the polynomials
+# Polynomial degree
 degree = 2
 jmax <- s * high_frequency
 
-# Number of covariates K
+# Number of covariates, K
 numhv = 1
 
 # Number of relevant covariates
 numtrue = 1
 
-# without using MIDAS
+# Without using MIDAS
 w = rep(1, jmax)
 w1 = rep(1, jmax)
 w2 = rep(1, jmax)
 
-#true parameters including the intercept, see Example 5.1 in the paper
+# True parameters, including the intercept; see Example 5.1 in the paper
 beta_true = c(1, 1)
 
-#group structure
+# Group structure
 gindex = NULL
 for (z in seq(numhv)){
   gindex <- c(gindex, rep(z, times = degree + 1))
 }
 
-# starting point of the gradient decent algorithm
+# Starting point for the gradient descent algorithm
 intercept_zero = 0
 
-#censoring strength gamma, which can generate approximately 81% censoring
+# Censoring-strength parameter gamma, which yields approximately 81% censoring
 censor = 0.15
 test_censoring_AR( s = s, n = 1000, censor_strength = censor)
 
@@ -249,30 +249,30 @@ ind = which(data$Ts <=  data$censoringtime)
 t_quan = 0.5
 t = quantile(data$Ts[ind], probs = t_quan)
 
-#call for parallel, notice that the number of cores is dependent on your own laptop
+# Set up parallel processing; choose the number of cores based on your computer
 stopCluster(cl)
 num_cores <- detectCores()
 cl <- makeCluster(num_cores-7)
 registerDoParallel(cl)
 packages_to_export <- c('timeROC', 'mvtnorm', 'Survivalml', "dplyr", "midasml", "survival", "MLmetrics", "pROC", "PRROC", 'survivalROC', 'dotCall64', 'glmnet', 'rlang', 'pracma')
 
-# repetitions of the simulation
+# Simulation repetitions
 it = 500
 for (n in c(100, 200, 500)) {
 result = foreach(k = 1:it, .packages = packages_to_export, .export = export_env) %dopar% {
       set.seed(k*t)
-      # data prepare
+      # Data preparation
       data = generateData_AR( s = s, n = n, numhv = numhv, numtrue = numtrue, degree = degree, jmax = jmax, parameters = beta_true, censor_strength = censor) # 3, 500, 0.7
       data_in = testRandomLogitDataset( data, t = t )
       data_in = KM_estimate(data_in)
 
-      #dataset for LASSO-UMIDAS
+      # Dataset for LASSO-UMIDAS
       X_orginal = data_in$X_orginal[ , 1:(1+jmax*numhv) ]
       y = 1*(data_in$time <= t)
       # IPW weights
       w_in = 1*( pmin(data_in$Ts, t) <= data_in$censoringtime)/data_in$Gp
 
-      #LASSO-UMIDAS
+      # LASSO-UMIDAS
       fit_cv_LASSO = survival_sparsegl(as.matrix(X_orginal[,-1]), y, group = seq(jmax*numhv), weight = w_in, lambda = 0,  asparse = 1, intercept_zero = 0, standardize = TRUE)
       est_cof = fit_cv_LASSO$beta
       results = list( est_cof = est_cof)

@@ -1,19 +1,19 @@
-#============================================================
+# Script: siginificance test.R
 # Corporate Survival Analysis with Machine Learning Methods
-# Import functions for simulation and empirical application
+# Purpose: Run the empirical significance tests.
 #============================================================
 
 rm(list = ls())
 source('import functions for empirical application.R')
 
 #============================================================
-# Reproduce pair-wise difference test
+# Reproduce the pairwise-difference test
 #============================================================
 
 
-# s = 6 years, t = 8, 8.5, 9 years
+# s = 6 years, t = 8, 8.5, and 9 years
 
-#sg-LASSO-M v.s. LASSOU
+# sg-LASSO-M vs. LASSO-UMIDAS
 
 #
 data_test = read.csv2("MIDAS_bootstrap6_AUC8.csv")
@@ -47,9 +47,9 @@ n = length(MIDAS)
 p_value = 1-max(length(which(MIDAS > LASSO))/n)
 
 
-# s = 10 years, t = 13, 13.5, 14 years
+# s = 10 years, t = 13, 13.5, and 14 years
 
-#sg-LASSO-M v.s. LASSOU
+# sg-LASSO-M vs. LASSO-UMIDAS
 #
 data_test = read.csv2("MIDAS_bootstrap10_AUC13.csv")
 dim(data_test)
@@ -82,9 +82,9 @@ MIDAS_LASSO = as.numeric(strsplit(data_test[3,1], ",")[[1]])[-1]
 n = length(MIDAS)
 p_value = 1-max(length(which(MIDAS > LASSO))/n)
 
-# s = 6 years, t = 8, 8.5, 9 years
+# s = 6 years, t = 8, 8.5, and 9 years
 
-#sg-LASSO-M v.s. LASSOMIDAS
+# sg-LASSO-M vs. LASSO-MIDAS
 
 #
 data_test = read.csv2("MIDAS_bootstrap6_AUC8.csv")
@@ -118,9 +118,9 @@ n = length(MIDAS)
 p_value = 1-max(length(which(MIDAS >= MIDAS_LASSO))/n)
 
 
-# s = 10 years, t = 13, 13.5, 14 years
+# s = 10 years, t = 13, 13.5, and 14 years
 
-#sg-LASSO-M v.s. LASSOMIDAS
+# sg-LASSO-M vs. LASSO-MIDAS
 #
 data_test = read.csv2("MIDAS_bootstrap10_AUC13.csv")
 dim(data_test)
@@ -154,9 +154,9 @@ n = length(MIDAS)
 p_value = 1-max(length(which(MIDAS >= MIDAS_LASSO))/n)
 
 
-# s = 6 years, t = 8, 8.5, 9 years
+# s = 6 years, t = 8, 8.5, and 9 years
 
-#sg-LASSO-M v.s. data without censored firms
+# sg-LASSO-M vs. data without censored firms
 
 #
 data_test_2 = read.csv2("comparison_MIDAS_bootstrap6_AUC8.csv")
@@ -185,9 +185,9 @@ MIDAS_LASSO_2 = as.numeric(strsplit(data_test_2[3,1], ",")[[1]])[-1]
 n = length(MIDAS_2)
 P_value = 1 - max(length(which(MIDAS > MIDAS_2))/1000)
 
-# s = 10 years, t = 13, 13.5, 14 years
+# s = 10 years, t = 13, 13.5, and 14 years
 
-#sg-LASSO-M v.s. data without censored firms
+# sg-LASSO-M vs. data without censored firms
 #
 data_test_2 = read.csv2("comparison_MIDAS_bootstrap10_AUC13.csv")
 dim(data_test_2)
@@ -218,9 +218,9 @@ P_value = 1 - max(length(which(MIDAS > MIDAS_2))/1000)
 
 # Additional application
 
-# s = 6 years, t = 8, 8.5, 9 years
+# s = 6 years, t = 8, 8.5, and 9 years
 
-#sg-LASSO-M v.s. LASSOU
+# sg-LASSO-M vs. LASSO-UMIDAS
 
 #
 data_test = read.csv2("Application_2_MIDAS_bootstrap6_AUC8.csv")
@@ -254,9 +254,9 @@ n = length(MIDAS)
 p_value = 1-max(length(which(MIDAS > LASSO))/n)
 
 
-# s = 10 years, t = 13, 13.5, 14 years
+# s = 10 years, t = 13, 13.5, and 14 years
 
-#sg-LASSO-M v.s. LASSOU
+# sg-LASSO-M vs. LASSO-UMIDAS
 #
 data_test = read.csv2("Application_2_MIDAS_bootstrap10_AUC13.csv")
 dim(data_test)
@@ -292,9 +292,9 @@ p_value = 1-max(length(which(MIDAS > LASSO))/n)
 
 
 
-# s = 6 years, t = 8, 8.5, 9 years
+# s = 6 years, t = 8, 8.5, and 9 years
 
-#sg-LASSO-M v.s. data without censored firms
+# sg-LASSO-M vs. data without censored firms
 
 #
 data_test_2 = read.csv2("Application_2_comparison_MIDAS_bootstrap6_AUC8.csv")
@@ -323,9 +323,9 @@ MIDAS_LASSO_2 = as.numeric(strsplit(data_test_2[3,1], ",")[[1]])[-1]
 n = length(MIDAS_2)
 P_value = 1 - max(length(which(MIDAS > MIDAS_2))/1000)
 
-# s = 10 years, t = 13, 13.5, 14 years
+# s = 10 years, t = 13, 13.5, and 14 years
 
-#sg-LASSO-M v.s. data without censored firms
+# sg-LASSO-M vs. data without censored firms
 #
 data_test_2 = read.csv2("Application_2_comparison_MIDAS_bootstrap10_AUC13.csv")
 dim(data_test_2)

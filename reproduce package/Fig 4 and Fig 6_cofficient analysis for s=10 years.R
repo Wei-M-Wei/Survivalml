@@ -3,14 +3,14 @@ library(ggplot2)
 s = 10
 quarter = 4
 degree = 2
-#################################
+# Script: Fig 4 and Fig 6_cofficient analysis for s=10 years.R
 data = read.csv2('period_final_new10.csv')
 p  = dim(data)[2] - 5
 name_v = c()
 for (j in seq(1, p, s*quarter)){
   name_v = c(name_v, rep(names(data)[j],3))
 }
-######################################
+# Purpose: Analyze coefficients for the s = 10 specification used in Figures 4 and 6.
 t = 13
 cof = read.csv2('MIDAS10_cof_AUC13.csv')
 cof
@@ -114,7 +114,7 @@ melted_data <- melt(cof_analysis)
 colnames(melted_data) <- c("Variables", "Time", "Value")
 # Create heatmap with ggplot2
 ggplot(melted_data, aes(Time, Variables, fill = factor(Value))) +  # Use factor for discrete values
-  geom_tile() +  # Add border to tiles
+  geom_tile() +  # Draw the heatmap tiles
   scale_fill_manual(values = c("0" = "white", "1" = "red")) +  # Custom colors
   labs(
        x = "Prediction horizon",
@@ -143,12 +143,12 @@ rownames(cof_final) <- names_pic
 colnames(cof_final) <- col_labels
 melted_data <- melt(cof_final)
 colnames(melted_data) <- c("Variables", "Time", "Value")
-#melted_data$Time = as.numeric(melted_data$Time)
-#melted_data$Variables = as.numeric(melted_data$Variables)
+# melted_data$Time = as.numeric(melted_data$Time)
+# melted_data$Variables = as.numeric(melted_data$Variables)
 melted_data$Value = as.numeric(melted_data$Value)
 # Create heatmap with ggplot2
-ggplot(melted_data, aes(Time, Variables, fill = Value)) +  # Use factor for discrete values
-  geom_tile() +  # Add border to tiles
+ggplot(melted_data, aes(Time, Variables, fill = Value)) +  # Use the numeric values directly
+  geom_tile() +  # Draw the heatmap tiles
   scale_fill_gradient(low = "white", high = "red", limits = c(0, 1)) +  # Custom colors
   labs(
        x = "Prediction horizon",

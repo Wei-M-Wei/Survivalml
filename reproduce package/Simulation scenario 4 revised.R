@@ -1,11 +1,11 @@
-#============================================================
+# Script: Simulation scenario 4 revised.R
 # Corporate Survival Analysis with Machine Learning Methods
-# Import functions for simulation and empirical application
+# Purpose: Run prediction simulation scenario 4.
 #============================================================
 
 
 #============================================================
-# Reproduce simulation, scenario 4 Table 1
+# Reproduce simulation scenario 4
 #============================================================
 
 
@@ -16,8 +16,8 @@ source('import functions for empirical application.R')
 
 
 
-#load necessary packages
-#library(midasml)
+# Load the required packages
+# library(midasml)
 library(dplyr)
 library(RSpectra)
 library(pROC)
@@ -44,33 +44,33 @@ library(lubridate)
 library(timeROC)
 library(mvtnorm)
 
-# data generating process, scenario 4
+# Data-generating process: scenario 4
 generateData_AR <-
   function(s, n, numhv, numtrue, degree, jmax, parameters = NA, censor_strength){
     TN = n
-    p <- numhv # Set the dimension of the matrix
-    degree <- degree # degree of the polynomials
-    jmax <- jmax # number of hf obs per lf obs
-    # daily covariates
+    p <- numhv # Set the matrix dimensions
+    degree <- degree # Polynomial degree
+    jmax <- jmax # Number of high-frequency observations per low-frequency observation
+    # Daily covariates
     Xdd <- array(NA, dim = c(TN, jmax, numhv))
-    # storage for Legendre weighted daily
+    # Storage for Legendre-weighted daily aggregates
     Xdw <- matrix(NA, nrow = TN, ncol = (degree+1)*numhv)
-    # storage for beta weighted daily (true DGP):
+    # Storage for beta-weighted daily aggregates (true DGP):
     Xdw_true <- matrix(NA, nrow = TN, ncol = numtrue)
-    # storage for daily
+    # Storage for daily data
     Xdd_g <- array(NA, dim = c(TN, jmax, numhv))
-    # storage for Legendre weighted daily
+    # Storage for Legendre-weighted daily aggregates
     Xdw_g <- matrix(NA, nrow = TN, ncol = (degree+1)*numhv)
-    # storage for beta weighted daily (true DGP):
+    # Storage for beta-weighted daily aggregates (true DGP):
     Xdw_true_g <- matrix(NA, nrow = TN, ncol = numtrue)
     ##########################################################
     
     Xd <- matrix(0, nrow = TN*jmax, ncol = p)
     
-    # level of cross-sectional dependence across all variables
+    # Level of cross-sectional dependence across variables
     phi = 0.1
     
-    # degree of time series dependence among its lag
+    # Degree of time-series dependence across lags
     rho = 0.9
     corr_matrix <- diag(1, p)
     
@@ -80,25 +80,25 @@ generateData_AR <-
       }
     }
     
-    # student(2) distribution
+    # Student-t(2) distribution
     for ( t in 1:(jmax)){
       if (t == 1){
         Xdd[,t,(1:p)] <- rmvt(TN, sigma = corr_matrix, df = 2 )
       }
       else{
-        Xdd[,t,(1:p)] <- rho * Xdd[,t-1,(1:p)] + rmvt(TN, sigma = corr_matrix*(1 - rho^2), df = 2 ) #scenario 4
+        Xdd[,t,(1:p)] <- rho * Xdd[,t-1,(1:p)] + rmvt(TN, sigma = corr_matrix*(1 - rho^2), df = 2 ) # Update the autoregressive covariates
       }
     }
     
     Xdd = abs(Xdd)
     
-    # storage for all lags, which is ued for LASSO-MIDAS
+    # Storage for all lags used in LASSO-MIDAS
     X_orginal = matrix(1, nrow = TN)
     for (i in seq(numhv)){
       X_orginal = cbind(X_orginal, Xdd[,,i])
     }
     
-    # specify the underlying weight function w1 and w2, which represent Beta(1,2) and Beta(1,3).
+    # Specify the underlying weight functions w1 and w2, representing Beta(1,2) and Beta(1,3), respectively.
     idx <- 1:(degree+1)
     gindex <- NULL
     
@@ -117,8 +117,8 @@ generateData_AR <-
     #
     dataset = cbind(rep(1, n),  Xdw)
     
-    # Inverse logit function
-    logit_inv <- function(p) log( p / (1 - p))  # Inverse logit function
+    # Logit function (probability to log-odds)
+    logit_inv <- function(p) log( p / (1 - p))  # Logit function (probability to log-odds)
     uniform_rand <- runif(n)
     
     # X^T%*%l
@@ -126,7 +126,7 @@ generateData_AR <-
     
     dataset %>%
       as_tibble() %>%
-      mutate( Ts = s + exp( (logit_inv(uniform_rand) - (cbind(rep(1,n), Xdw_true) %*% parameters)) / (div)), # equation (10) in the paper
+      mutate( Ts = s + exp( (logit_inv(uniform_rand) - (cbind(rep(1,n), Xdw_true) %*% parameters)) / (div)), # Equation (10) in the paper
               censoringtime = s + rexp(n, censor_strength),
               time = pmin(Ts, censoringtime),
               status = as.numeric(Ts <= censoringtime),
@@ -134,7 +134,7 @@ generateData_AR <-
   }
 
 
-#check the censoring rate
+# Check the censoring rate
 test_censoring_AR = function(s, n, censor_strength){
   res = 0
   for (i in seq(100)){
@@ -145,45 +145,45 @@ test_censoring_AR = function(s, n, censor_strength){
 }
 
 
-# initial setting
+# Initial settings
 s = 6
 
-#quratker/year frequency
+# Quarterly frequency
 high_frequency = 4
 
-# degree of the polynomials
+# Polynomial degree
 degree = 2
 jmax <- s * high_frequency
 
-# Number of covariates K
+# Number of covariates, K
 numhv = 50
 
 # Number of relevant covariates
 numtrue = 2
 
-# Gegenbauer polynomials W, L = 3 <=> degree is set to 2
+# Gegenbauer polynomials W: L = 3 implies degree = 2
 w <- gb(degree = degree, alpha = -1/2, a = 0, b = 1, jmax = jmax)/jmax
 
 # Underlying weight function
 w1 <- dbeta((1:jmax)/(jmax), shape1 = 1, shape2 = 3)
 w2 <- dbeta((1:jmax)/(jmax), shape1 = 2, shape2 = 3)
 
-#true parameters including the intercept, see Example 5.1 in the paper
+# True parameters, including the intercept; see Example 5.1 in the paper
 beta_true = c(1, 1, -1)
 
-#group structure
+# Group structure
 gindex = NULL
 for (z in seq(numhv)){
   gindex <- c(gindex, rep(z, times = degree + 1))
 }
 
-# starting point of the gradient decent algorithm
+# Starting point for the gradient descent algorithm
 intercept_zero = 0
 
-# cross-validation
+# Cross-validation
 alpha = c(0, 0.1, 0.3, 0.5, 0.7, 0.9, 1)
 
-#censoring strength gamma, which can generate approximately 81% censoring
+# Censoring-strength parameter gamma, which yields approximately 81% censoring
 censor = 1.68
 test_censoring_AR( s = s, n = 1000, censor_strength = censor)
 
@@ -202,17 +202,17 @@ for (k in 1:100) {
 t_quantile = t_quantile/100 # c(quantile(data$Ts[ind], probs = 0.1), quantile(data$Ts[ind], probs = 0.3), quantile(data$Ts[ind], probs = 0.5))
 censor_strength = c(censor)
 
-#call for parallel
+# Set up parallel processing
 stopCluster(cl)
 num_cores <- detectCores()
 cl <- makeCluster(num_cores-22)
 registerDoParallel(cl)
 packages_to_export <- c('timeROC', 'mvtnorm', 'Survivalml', "dplyr", "survival", "MLmetrics", "pROC", "PRROC", 'survivalROC', 'dotCall64', 'glmnet', 'rlang', 'pracma')
 
-# repetitions of the simulation
+# Simulation repetitions
 it = 100
 
-#scenario 5 N = 800
+# Scenario 4: N = 800
 for (censor in censor_strength){
   n = 800
   i=0
@@ -224,7 +224,7 @@ for (censor in censor_strength){
     result = foreach(k = 1:it, .errorhandling= 'remove', .packages = packages_to_export, .export = export_env) %dopar% {
       set.seed(s*k)
       
-      # data prepare
+      # Data preparation
       data = generateData_AR( s = s, n = n, numhv = numhv, numtrue = numtrue, degree = degree, jmax = jmax, parameters = beta_true, censor_strength = censor) # 3, 500, 0.7
       dataset_p = data[ which( (1*( data$time <= t ))*(1*( data$status == 1 )) == 1), ]
       dataset_n = data[ which( (1*( data$time <= t ))*(1*( data$status == 1 )) == 0), ]
@@ -241,7 +241,7 @@ for (censor in censor_strength){
       test_dataset = testRandomLogitDataset( test_dataset, t = t )
       test_dataset = KM_estimate(test_dataset)
       
-      # 5-fold cross validation
+      # 5-fold cross-validation
       nfold = 5
       index_fold = which(1*(train_dataset$time <= t) * 1*(train_dataset$status == 1) == 1)
       if (length(index_fold) < 5){
@@ -250,11 +250,11 @@ for (censor in censor_strength){
         foldid = c( form_folds(nrow(train_dataset[index_fold,]), nfold), form_folds(nrow(train_dataset[-index_fold,]), nfold) )
       }
       
-      # dataset for LASSO-UMIDAS
+      # Dataset for LASSO-UMIDAS
       X_orginal_train = train_dataset$X_orginal[ , 1:(1+jmax*numhv) ]
       X_orginal_test = test_dataset$X_orginal[ , 1:(1+jmax*numhv) ]
       
-      # dataset for sg-LASSO-MIDAS
+      # Dataset for sg-LASSO-MIDAS
       X_train = train_dataset[ , 1:(numhv*(degree+1)+1) ]
       y_train = 1*(train_dataset$time <= t)
       X_test = as.matrix( test_dataset[, 1:(numhv*(degree+1)+1)] )
@@ -268,7 +268,7 @@ for (censor in censor_strength){
       test_predictions_MIDAS = unlist( as.list(plogis(cbind(1, X_test[,-1]) %*% fit_cv_MIDAS$coff_AUC)))
       est_MIDAS = fit_cv_MIDAS$coff_AUC
       
-      #LASSO-MIDAS
+      # LASSO-MIDAS
       if (fit_cv_MIDAS$alpha_out == 1){
         fit_cv_MIDAS_LASSO = fit_cv_MIDAS
         test_predictions_MIDAS_LASSO = test_predictions_MIDAS
@@ -280,20 +280,20 @@ for (censor in censor_strength){
         test_predictions_MIDAS_LASSO = unlist( as.list(plogis(cbind(1, X_test[,-1]) %*% est_MIDAS_LASSO)))
       }
       
-      #LASSO-UMIDAS
+      # LASSO-UMIDAS
       fit_cv_LASSO = cv.survival_sparsegl(as.matrix(X_orginal_train[,-1]), y_train, group = seq(jmax*numhv), nlambda = 50, weight = w_train, asparse = 1, foldid = foldid, nfolds = nfold, pred.loss = 'censor', intercept_zero = intercept_zero, standardize = TRUE, AUC = TRUE, data = train_dataset, t = t, maxit = 30000)
       cesnor_min_index_LASSO = which(fit_cv_LASSO$AUC_censor == max(fit_cv_LASSO$AUC_censor))[1]
       est_LASSO = unlist(c(fit_cv_LASSO$survival_sparsegl$b0[,cesnor_min_index_LASSO], fit_cv_LASSO$survival_sparsegl$beta[,cesnor_min_index_LASSO]))
       test_predictions_LASSO = unlist( as.list(plogis(cbind(1, X_orginal_test[,-1]) %*% est_LASSO)))
       
-      # oracle AUC
+      # Oracle AUC
       b_truec = c(beta_true[1] + log((t - s)), beta_true[-1]  +  log((t - s)))
       b_truec = c(b_truec[1:(1)], w1*b_truec[1+1], w2*b_truec[1+1+1])
       predictions_true = unlist(as.list(plogis(X_orginal_test[, 1: (1+jmax*numtrue)] %*% b_truec)))
       AUC_true_N_t = survivalROC(Stime=test_dataset$time, status= test_dataset$status, marker = predictions_true, predict.time = t, span = 0.25*nrow(data)^(-1/2))
       AUC_true_N = AUC_true_N_t$AUC
       
-      # prediction for 3 approaches
+      # Predictions from the three approaches
       AUC_MIDAS_N = ROC_censor_N(data = test_dataset, prediction = test_predictions_MIDAS, t = t )$AUC
       AUC_MIDAS_LASSO_N = ROC_censor_N(data = test_dataset, prediction = test_predictions_MIDAS_LASSO, t = t )$AUC
       AUC_LASSO_N = ROC_censor_N(data = test_dataset, prediction = test_predictions_LASSO, t = t )$AUC
@@ -334,7 +334,7 @@ for (censor in censor_strength){
   write.table(pa, table_name, sep = ";", row.names = FALSE, quote = FALSE)
 }
 
-#scenario 4 N = 1200
+# Scenario 4 N = 1200
 for (censor in censor_strength){
   n = 1200
   i=0
@@ -346,7 +346,7 @@ for (censor in censor_strength){
     result = foreach(k = 1:it, .errorhandling= 'remove', .packages = packages_to_export, .export = export_env) %dopar% {
       set.seed(s*k)
       
-      # data prepare
+      # Data preparation
       data = generateData_AR( s = s, n = n, numhv = numhv, numtrue = numtrue, degree = degree, jmax = jmax, parameters = beta_true, censor_strength = censor) # 3, 500, 0.7
       dataset_p = data[ which( (1*( data$time <= t ))*(1*( data$status == 1 )) == 1), ]
       dataset_n = data[ which( (1*( data$time <= t ))*(1*( data$status == 1 )) == 0), ]
@@ -363,7 +363,7 @@ for (censor in censor_strength){
       test_dataset = testRandomLogitDataset( test_dataset, t = t )
       test_dataset = KM_estimate(test_dataset)
       
-      # 5-fold cross validation
+      # 5-fold cross-validation
       nfold = 5
       index_fold = which(1*(train_dataset$time <= t) * 1*(train_dataset$status == 1) == 1)
       if (length(index_fold) < 5){
@@ -372,11 +372,11 @@ for (censor in censor_strength){
         foldid = c( form_folds(nrow(train_dataset[index_fold,]), nfold), form_folds(nrow(train_dataset[-index_fold,]), nfold) )
       }
       
-      # dataset for LASSO-UMIDAS
+      # Dataset for LASSO-UMIDAS
       X_orginal_train = train_dataset$X_orginal[ , 1:(1+jmax*numhv) ]
       X_orginal_test = test_dataset$X_orginal[ , 1:(1+jmax*numhv) ]
       
-      # dataset for sg-LASSO-MIDAS
+      # Dataset for sg-LASSO-MIDAS
       X_train = train_dataset[ , 1:(numhv*(degree+1)+1) ]
       y_train = 1*(train_dataset$time <= t)
       X_test = as.matrix( test_dataset[, 1:(numhv*(degree+1)+1)] )
@@ -390,7 +390,7 @@ for (censor in censor_strength){
       test_predictions_MIDAS = unlist( as.list(plogis(cbind(1, X_test[,-1]) %*% fit_cv_MIDAS$coff_AUC)))
       est_MIDAS = fit_cv_MIDAS$coff_AUC
       
-      #LASSO-MIDAS
+      # LASSO-MIDAS
       if (fit_cv_MIDAS$alpha_out == 1){
         fit_cv_MIDAS_LASSO = fit_cv_MIDAS
         test_predictions_MIDAS_LASSO = test_predictions_MIDAS
@@ -402,20 +402,20 @@ for (censor in censor_strength){
         test_predictions_MIDAS_LASSO = unlist( as.list(plogis(cbind(1, X_test[,-1]) %*% est_MIDAS_LASSO)))
       }
       
-      #LASSO-UMIDAS
+      # LASSO-UMIDAS
       fit_cv_LASSO = cv.survival_sparsegl(as.matrix(X_orginal_train[,-1]), y_train, group = seq(jmax*numhv), nlambda = 50, weight = w_train, asparse = 1, foldid = foldid, nfolds = nfold, pred.loss = 'censor', intercept_zero = intercept_zero, standardize = TRUE, AUC = TRUE, data = train_dataset, t = t, maxit = 30000)
       cesnor_min_index_LASSO = which(fit_cv_LASSO$AUC_censor == max(fit_cv_LASSO$AUC_censor))[1]
       est_LASSO = unlist(c(fit_cv_LASSO$survival_sparsegl$b0[,cesnor_min_index_LASSO], fit_cv_LASSO$survival_sparsegl$beta[,cesnor_min_index_LASSO]))
       test_predictions_LASSO = unlist( as.list(plogis(cbind(1, X_orginal_test[,-1]) %*% est_LASSO)))
       
-      # oracle AUC
+      # Oracle AUC
       b_truec = c(beta_true[1] + log((t - s)), beta_true[-1]  +  log((t - s)))
       b_truec = c(b_truec[1:(1)], w1*b_truec[1+1], w2*b_truec[1+1+1])
       predictions_true = unlist(as.list(plogis(X_orginal_test[, 1: (1+jmax*numtrue)] %*% b_truec)))
       AUC_true_N_t = survivalROC(Stime=test_dataset$time, status= test_dataset$status, marker = predictions_true, predict.time = t, span = 0.25*nrow(data)^(-1/2))
       AUC_true_N = AUC_true_N_t$AUC
       
-      # prediction for 3 approaches
+      # Predictions from the three approaches
       AUC_MIDAS_N = ROC_censor_N(data = test_dataset, prediction = test_predictions_MIDAS, t = t )$AUC
       AUC_MIDAS_LASSO_N = ROC_censor_N(data = test_dataset, prediction = test_predictions_MIDAS_LASSO, t = t )$AUC
       AUC_LASSO_N = ROC_censor_N(data = test_dataset, prediction = test_predictions_LASSO, t = t )$AUC

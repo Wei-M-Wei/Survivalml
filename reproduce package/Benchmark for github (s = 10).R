@@ -1,11 +1,11 @@
-#============================================================
+# Script: Benchmark for github (s = 10).R
 # Corporate Survival Analysis with Machine Learning Methods
-# Import functions for simulation and empirical application
+# Purpose: Reproduce the benchmark empirical results for s = 10.
 #============================================================
 
 
 #============================================================
-# Reproduce empirical application when s = 6 years and t = 8,8.5,9 years
+# Reproduce the empirical application for s = 10 years and t = 13, 13.5, and 14 years
 #============================================================
 
 
@@ -16,7 +16,7 @@ source('import functions for empirical application.R')
 
 
 
-#load necessary packages
+# Load the required packages
 library(midasml)
 library(dplyr)
 library(RSpectra)
@@ -44,17 +44,17 @@ library(lubridate)
 library(timeROC)
 
 
-#empirical settings
+# Empirical settings
 s = 10
 lag_use_year = 4
 quarter = 4
-lags = lag_use_year * quarter - 1 ############we don't have the information of the last lag.
+lags = lag_use_year * quarter - 1 # Information about the last lag is unavailable.
 jmax <- lags
 
 
 
-# read the data and check basic information
-data_financial = read.csv2("period_final_new10.csv")  # read function from package readxl
+# Read the data and inspect basic information
+data_financial = read.csv2("period_final_new10.csv")  # Read the dataset
 n = dim(data_financial)[1]
 p_fin = dim(data_financial)[2] - 5
 for (col in names(data_financial)[1:p_fin]) {
@@ -63,13 +63,13 @@ for (col in names(data_financial)[1:p_fin]) {
   }
 }
 data = data_financial
-which('true' == is.na(data))# if null values exist
-p = dim(data)[2] - 5 #'start_day, banktuptcy_day, T, censoring_status, C' variables in the last 5 columns
+which('true' == is.na(data))# If NULL values exist
+p = dim(data)[2] - 5 # The variables 'start_day, banktuptcy_day, T, censoring_status, C' are in the last five columns
 n = dim(data)[1]
 
 
 
-# Define survival time, censoring time to calculate KM weights
+# Define the survival and censoring times used to calculate KM weights
 end_observation = '2020-12-31'
 data$start_day = sapply(data$start_day, convert_to_ymd)
 data$censoringtime = as.numeric( as.Date(end_observation) - as.Date(data$start_day) )/365
@@ -85,13 +85,13 @@ degree = 2
 w_fin <- gb(degree = degree, alpha = -1/2, a = 0, b = 1, jmax = jmax)/jmax
 
 
-# tuning parameter grid search
+# Grid search for the tuning parameter
 alpha = c(0, 0.1, 0.3, 0.5, 0.7, 0.9, 1)
 
-#bootstrap size
+# Bootstrap size
 bootstrap_number = 1000
 
-# parallel settings: we need 10 cores
+# Parallel setup using 10 cores
 num_cores <- detectCores()
 cl <- makeCluster(num_cores-2)
 registerDoParallel(cl)
@@ -99,10 +99,10 @@ packages_to_export <- c('timeROC', 'Survivalml', "dplyr", "midasml", "survival",
 ##############################################################
 
 
-# prediction horizons t = 8, 8.5, 9 years, Estimator(5) in this paper
+# Prediction horizons t = 8, 8.5, and 9 years: Estimator (5) in the paper
 
 for (t in c( 13, 13.5, 14)) {
-  # iteration number
+  # Number of iterations
   it = 10
   result_para = foreach(k = 1:it, .packages = packages_to_export, .export = export_env) %dopar% {
     set.seed( s + k)
@@ -123,9 +123,9 @@ for (t in c( 13, 13.5, 14)) {
     test_dataset = testRandomLogitDataset( test_dataset_in, t = t )
     test_dataset = KM_estimate(test_dataset)
 
-    #################################Apply MIDAS
+    # Apply MIDAS
 
-    # extract the latest lag of each covariate
+    # Extract the latest lag of each covariate
     X_train = train_dataset[,seq(lags, dim(train_dataset)[2],lags)]
     y_train = 1*(train_dataset$time <= t)
     X_test = test_dataset[,seq(lags, dim(test_dataset)[2],lags)]
@@ -160,7 +160,7 @@ for (t in c( 13, 13.5, 14)) {
   res = list(AUC_MIDAS = round(colMeans(AUC_MIDAS),3), AUC_MIDAS_VAR = round(apply(AUC_MIDAS, 2, var),3), AUC_MIDAS_bootstrap_av = round(AUC_MIDAS_bootstrap_av, 3 ))
 
 
-  # save the table
+  # Save the table
   table_name1 <- paste0("bench_MIDAS_AUC", s, "_AUC_cvm", t, ".csv")
   write.csv(rbind( c(res$AUC_MIDAS, res$AUC_MIDAS_VAR) ,
                    c( quantile(res$AUC_MIDAS_bootstrap_av, 0.025), quantile(res$AUC_MIDAS_bootstrap_av, 0.975)
