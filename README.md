@@ -111,9 +111,7 @@ because the scripts use relative paths and several of them source
 `import functions for empirical application.R`.
 
 Install `Survivalml` and the packages listed above before running the scripts.
-The empirical scripts use `period_final_new6.csv`,
-`period_final_new10.csv`, and, for macro-augmented specifications,
-`process.xls`. The simulation and empirical scripts can be computationally
+The empirical datasets are available upon request. The simulation and empirical scripts can be computationally
 intensive because they use bootstrap repetitions, cross-validation, and
 parallel processing. Adjust the number of workers to suit your computer.
 
