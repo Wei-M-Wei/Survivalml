@@ -173,6 +173,7 @@ Use the exact filenames below.
   `application 1 for github (s = 6) another group structure 2 (grouped by correlation matrix).R`,
   `application 1 for github (s = 10) another group structure 1 ((grouped by covariate type)).R`, and
   `application 1 for github (s = 10) another group structure 2 ((grouped by correlation matrix)).R`
+  <!--
 - **Tables S9-S10 (arXiv Tables 20-21):**
   `application 2 for github (s = 6).R`,
   `application 2 for github (s = 10).R`,
@@ -180,7 +181,7 @@ Use the exact filenames below.
   `application 2 Benchmark for github (s = 10).R`,
   `application 2 Macro for github (s = 6).R`, and
   `application 2 Macro for github (s = 10).R`
-
+-->
 
 ## Reference
 
