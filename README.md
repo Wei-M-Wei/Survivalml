@@ -1,6 +1,6 @@
 ## Survivalml [![Download](https://img.shields.io/badge/Download-ZIP-blue.svg)](https://github.com/Wei-M-Wei/Survivalml/raw/master/Survivalml_0.1.0.tar.gz)
 
-Above is R package 'Survivalml'. Please note that the package itself does not include the raw dataset used in the empirical section. The dataset is available in 'reproduce package'.
+Here is R package 'Survivalml'. Please note that the package itself does not include the raw dataset used in the empirical section. The dataset is available in 'reproduce package'.
 
 To install and use the package, we recommend downloading 'Survivalml_0.1.0.tar.gz' and installing the package locally by
 ```{r }
